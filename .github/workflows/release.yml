@@ -4,9 +4,13 @@ on:
   push:
     tags: ['v*']
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -23,8 +27,37 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - run: cargo build --release --target ${{ matrix.target }}
-      - uses: softprops/action-gh-release@v2
+
+      - name: Find and build plugin binaries
+        shell: bash
+        run: |
+          mkdir -p release
+          for dir in */; do
+            if [ -f "$dir/Cargo.toml" ] && [ "$dir" != "shared/" ] && [ "$dir" != "template/" ]; then
+              name=$(basename "$dir")
+              echo "Building $name..."
+              if cargo build --release --target ${{ matrix.target }} --manifest-path "$dir/Cargo.toml" 2>/dev/null; then
+                # Find the binary
+                bin_name=$(grep -oP 'name\s*=\s*"\K[^"]+' "$dir/Cargo.toml" | head -1)
+                if [ -z "$bin_name" ]; then
+                  bin_name="$name"
+                fi
+                ext=""
+                if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+                  ext=".exe"
+                fi
+                binary="target/${{ matrix.target }}/release/${bin_name}${ext}"
+                if [ -f "$binary" ]; then
+                  cp "$binary" "release/${bin_name}-${{ matrix.target }}${ext}"
+                  echo "  -> ${bin_name}"
+                fi
+              else
+                echo "  -> FAILED (skipped)"
+              fi
+            fi
+          done
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
         with:
-          files: |
-            target/${{ matrix.target }}/release/proto-*
+          files: release/*
