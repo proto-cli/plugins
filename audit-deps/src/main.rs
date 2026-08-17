@@ -16,6 +16,7 @@ impl Theme {
     const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
     const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
     const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
+    const BOLD: owo_colors::Style = owo_colors::Style::new().bold();
 }
 
 fn header(s: &str) -> String {
@@ -407,20 +408,22 @@ fn run(
 }
 
 fn new_agent() -> ureq::Agent {
-    ureq::AgentBuilder::new()
-        .timeout_connect(Duration::from_secs(10))
-        .timeout_read(Duration::from_secs(20))
-        .build()
+    ureq::Agent::new_with_config(
+        ureq::config::Config::builder()
+            .timeout_connect(Some(Duration::from_secs(10)))
+            .timeout_recv_body(Some(Duration::from_secs(20)))
+            .build()
+    )
 }
 
 fn fetch_kev(agent: &ureq::Agent) -> (BTreeSet<String>, BTreeSet<String>) {
     let mut kev = BTreeSet::new();
     let mut ransomware = BTreeSet::new();
-    let resp = match agent.get(KEV_URL).call() {
+    let mut resp = match agent.get(KEV_URL).call() {
         Ok(r) => r,
         Err(_) => return (kev, ransomware),
     };
-    let value: serde_json::Value = match resp.into_json() {
+    let value: serde_json::Value = match resp.body_mut().read_json() {
         Ok(v) => v,
         Err(_) => return (kev, ransomware),
     };
@@ -931,14 +934,14 @@ fn osv_batch(agent: &ureq::Agent, queries: &[PackageQuery]) -> BTreeMap<String, 
                 })
             }).collect::<Vec<_>>(),
         });
-        let resp = match agent.post(OSV_BATCH).send_json(&body) {
+        let mut resp = match agent.post(OSV_BATCH).send_json(&body) {
             Ok(r) => r,
             Err(e) => {
                 eprintln!("  {} OSV query failed: {}", error(""), e);
                 continue;
             }
         };
-        let value: serde_json::Value = match resp.into_json() {
+        let value: serde_json::Value = match resp.body_mut().read_json() {
             Ok(v) => v,
             Err(_) => continue,
         };
@@ -983,11 +986,11 @@ fn vuln_details(agent: &ureq::Agent, hits: &BTreeMap<String, Vec<String>>) -> BT
                 let id = id.clone();
                 handles.push(s.spawn(move || {
                     let url = format!("{}/{}", OSV_VULN, id);
-                    let resp = match agent.get(&url).call() {
+                    let mut resp = match agent.get(&url).call() {
                         Ok(r) => r,
                         Err(_) => return None,
                     };
-                    let value: serde_json::Value = match resp.into_json() {
+                    let value: serde_json::Value = match resp.body_mut().read_json() {
                         Ok(v) => v,
                         Err(_) => return None,
                     };
@@ -1419,12 +1422,14 @@ fn dedup_vulns(vulns: Vec<Vuln>) -> Vec<Vuln> {
 }
 
 fn get_json_meta(agent: &ureq::Agent, url: &str) -> Option<(serde_json::Value, Option<String>)> {
-    let resp = agent.get(url).call().ok()?;
+    let mut resp = agent.get(url).call().ok()?;
     let last_modified = resp
-        .header("last-modified")
-        .or_else(|| resp.header("date"))
+        .headers()
+        .get("last-modified")
+        .or_else(|| resp.headers().get("date"))
+        .and_then(|v| v.to_str().ok())
         .map(|s| s.to_string());
-    resp.into_json().ok().map(|v| (v, last_modified))
+    resp.body_mut().read_json().ok().map(|v| (v, last_modified))
 }
 
 fn arch_version_lt(installed: &str, fixed: &str) -> bool {
@@ -1728,7 +1733,7 @@ fn osv_freshness(agent: &ureq::Agent, ecosystems: &[&str]) -> Vec<(String, Strin
                     .head(&url)
                     .call()
                     .ok()
-                    .and_then(|r| r.header("last-modified").map(|x| x.to_string()));
+                    .and_then(|r| r.headers().get("last-modified").and_then(|v| v.to_str().ok()).map(|x| x.to_string()));
                 (ec, fmt_updated(lm))
             }));
         }

@@ -646,7 +646,7 @@ fn call_openai_compat(
         req.header("Authorization", &format!("Bearer {}", config.api_key))
     };
 
-    let resp = req.send_json(&body).map_err(|e| format!("API error: {}", e))?;
+    let mut resp = req.send_json(&body).map_err(|e| format!("API error: {}", e))?;
     let status = resp.status();
 
     if status == 401 {
@@ -659,7 +659,7 @@ fn call_openai_compat(
         return Err(format!("404 Not Found — check your endpoint URL: {}", url));
     }
     if status != 200 {
-        let body = resp.into_string().unwrap_or_default();
+        let body = resp.body_mut().read_to_string().unwrap_or_default();
         return Err(format!(
             "HTTP {} from {}: {}",
             status,
@@ -704,7 +704,7 @@ fn call_gemini_stream(
         config.model, config.api_key
     );
 
-    let resp = ureq::post(&url)
+    let mut resp = ureq::post(&url)
         .header("Content-Type", "application/json")
         .send_json(body)
         .map_err(|e| format!("Gemini API error: {}", e))?;
@@ -716,7 +716,7 @@ fn call_gemini_stream(
         );
     }
     if status != 200 {
-        let msg = resp.into_string().unwrap_or_default();
+        let msg = resp.body_mut().read_to_string().unwrap_or_default();
         return Err(format!(
             "Gemini HTTP {}: {}",
             status,
@@ -727,10 +727,10 @@ fn call_gemini_stream(
     read_gemini_sse(resp, on_token)
 }
 
-fn read_openai_sse(resp: ureq::Response, mut on_token: impl FnMut(&str)) -> Result<String, String> {
+fn read_openai_sse(resp: http::Response<ureq::Body>, mut on_token: impl FnMut(&str)) -> Result<String, String> {
     use std::io::Read;
     let mut full = String::new();
-    let mut reader = resp.into_reader();
+    let mut reader = resp.into_body().into_reader();
     let mut buf = [0u8; 4096];
 
     loop {
@@ -760,12 +760,12 @@ fn read_openai_sse(resp: ureq::Response, mut on_token: impl FnMut(&str)) -> Resu
 }
 
 fn read_gemini_sse(
-    resp: ureq::Response,
+    resp: http::Response<ureq::Body>,
     mut on_token: impl FnMut(&str),
 ) -> Result<String, String> {
     use std::io::Read;
     let mut full = String::new();
-    let mut reader = resp.into_reader();
+    let mut reader = resp.into_body().into_reader();
     let mut buf = [0u8; 4096];
 
     loop {

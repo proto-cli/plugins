@@ -206,7 +206,7 @@ fn doctor() {
 
         if auto {
             for (bin, fix) in fixes {
-                if bin == "python3" || bin == "pip3" || bin == "git" || bin == "lsof" {
+                if *bin == "python3" || *bin == "pip3" || *bin == "git" || *bin == "lsof" {
                     let sp = Spinner::new(&format!("Installing {}...", bin));
                     let status = std::process::Command::new("sudo")
                         .args([

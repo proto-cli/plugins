@@ -8,12 +8,14 @@ use std::time::{Duration, Instant};
 
 struct Theme;
 impl Theme {
-    const HEADER: &'static str = "cyan";
-    const ACCENT: &'static str = "magenta";
-    const SUCCESS: &'static str = "green";
-    const ERROR: &'static str = "red";
-    const MUTED: &'static str = "dark_grey";
-    const WARN: &'static str = "yellow";
+    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
+    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
+    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
+    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
+    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
+    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
+    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
+    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
 }
 fn header(s: &str) -> String { format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER)) }
 fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }
@@ -21,9 +23,7 @@ fn error(s: &str) -> String { format!("{} {}", "✗".style(Theme::ERROR), s) }
 fn warn(s: &str) -> String { format!("{} {}", "⚠".style(Theme::WARN), s) }
 fn muted(s: &str) -> String { format!("{}", s.style(Theme::MUTED)) }
 fn divider() -> String { "─".repeat(40).dimmed().to_string() }
-fn label_value(label: &str, value: &str) -> String {
-    format!("{} {}", format!("{:>14}:", label).style("cyan").to_string(), value.style("magenta").to_string())
-}
+fn label_value(label: &str, value: &str) -> String { format!("{} {}", format!("{:>14}:", label).style(Theme::LABEL), value.style(Theme::VALUE)) }
 fn which(binary: &str) -> bool {
     Command::new("which").arg(binary).stdout(Stdio::null()).stderr(Stdio::null()).status().map(|s| s.success()).unwrap_or(false)
 }

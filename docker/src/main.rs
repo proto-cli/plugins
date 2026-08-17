@@ -4,12 +4,14 @@ use std::process::Command;
 
 struct Theme;
 impl Theme {
-    const HEADER: &'static str = "cyan";
-    const ACCENT: &'static str = "magenta";
-    const SUCCESS: &'static str = "green";
-    const ERROR: &'static str = "red";
-    const MUTED: &'static str = "dark_grey";
-    const WARN: &'static str = "yellow";
+    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
+    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
+    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
+    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
+    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
+    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
+    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
+    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
 }
 fn header(s: &str) -> String { format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER)) }
 fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }

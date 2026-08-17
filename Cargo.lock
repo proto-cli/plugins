@@ -35,6 +35,7 @@ dependencies = [
  "clap",
  "dialoguer",
  "dirs",
+ "http",
  "indicatif",
  "owo-colors",
  "serde",
@@ -127,6 +128,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
+ "indicatif",
  "owo-colors",
  "regex",
  "serde_json",
@@ -594,6 +596,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
+ "indicatif",
  "owo-colors",
 ]
 
@@ -641,6 +644,7 @@ dependencies = [
  "clap",
  "dialoguer",
  "dirs",
+ "indicatif",
  "owo-colors",
  "serde_json",
 ]

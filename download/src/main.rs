@@ -133,16 +133,16 @@ fn video(url_opt: Option<&str>, format_opt: Option<VideoFormat>, dir_opt: Option
 
     let mut args: Vec<String> = Vec::new();
     match fmt {
-        VideoFormat::Best => { args.extend_from_slice(&["-f", "bv*+ba/b", "--merge-output-format", "mp4"]); }
-        VideoFormat::P1080 => { args.extend_from_slice(&["-f", "bv*[height<=1080]+ba/b[height<=1080]", "--merge-output-format", "mp4"]); }
-        VideoFormat::P720 => { args.extend_from_slice(&["-f", "bv*[height<=720]+ba/b[height<=720]", "--merge-output-format", "mp4"]); }
-        VideoFormat::P480 => { args.extend_from_slice(&["-f", "bv*[height<=480]+ba/b[height<=480]", "--merge-output-format", "mp4"]); }
-        VideoFormat::AudioMp3 => { args.extend_from_slice(&["-x", "--audio-format", "mp3", "--audio-quality", "1"]); }
+        VideoFormat::Best => { args.extend(["-f", "bv*+ba/b", "--merge-output-format", "mp4"].map(String::from)); }
+        VideoFormat::P1080 => { args.extend(["-f", "bv*[height<=1080]+ba/b[height<=1080]", "--merge-output-format", "mp4"].map(String::from)); }
+        VideoFormat::P720 => { args.extend(["-f", "bv*[height<=720]+ba/b[height<=720]", "--merge-output-format", "mp4"].map(String::from)); }
+        VideoFormat::P480 => { args.extend(["-f", "bv*[height<=480]+ba/b[height<=480]", "--merge-output-format", "mp4"].map(String::from)); }
+        VideoFormat::AudioMp3 => { args.extend(["-x", "--audio-format", "mp3", "--audio-quality", "1"].map(String::from)); }
     }
-    if subtitles { args.extend_from_slice(&["--write-subs", "--sub-langs", "en,en.*"]); }
-    if metadata && fmt != VideoFormat::AudioMp3 { args.extend_from_slice(&["--embed-metadata", "--embed-thumbnail"]); }
-    if metadata && fmt == VideoFormat::AudioMp3 { args.extend_from_slice(&["--embed-metadata", "--embed-thumbnail", "--write-thumbnail"]); }
-    args.extend_from_slice(&["-o", &format!("{}/%(title)s.%(ext)s", dir), "--no-playlist", &url]);
+    if subtitles { args.extend(["--write-subs", "--sub-langs", "en,en.*"].map(String::from)); }
+    if metadata && fmt != VideoFormat::AudioMp3 { args.extend(["--embed-metadata", "--embed-thumbnail"].map(String::from)); }
+    if metadata && fmt == VideoFormat::AudioMp3 { args.extend(["--embed-metadata", "--embed-thumbnail", "--write-thumbnail"].map(String::from)); }
+    args.extend(["-o", &format!("{}/%(title)s.%(ext)s", dir), "--no-playlist", &url].map(String::from));
 
     println!();
     println!("  {}", label_value("URL", &url));
@@ -202,7 +202,7 @@ fn youtube_music(url: &str, dir: &str, amount: Option<usize>, newest: bool, yes:
     };
 
     let mut args: Vec<String> = vec!["-f".into(), "bestaudio".into(), "-x".into(), "--audio-format".into(), "mp3".into(), "--audio-quality".into(), "1".into()];
-    if metadata { args.extend_from_slice(&["--embed-metadata", "--embed-thumbnail", "--write-thumbnail"]); }
+    if metadata { args.extend(["--embed-metadata", "--embed-thumbnail", "--write-thumbnail"].map(String::from)); }
     args.push("-o".into()); args.push(format!("{}/%(uploader)s/%(title)s.%(ext)s", dir));
     if amount > 0 { args.push("--playlist-items".into()); args.push(format!("1:{}", amount)); }
     match sort { SortOrder::Newest => { args.push("--playlist-reverse".into()); }, SortOrder::Shuffle => { args.push("--playlist-random".into()); }, _ => {} }
@@ -289,7 +289,7 @@ fn soundcloud(url: &str, dir: &str, browser: Option<&str>, cookies_file: Option<
     let mut args: Vec<String> = Vec::new();
     args.push("--batch-file".into()); args.push(batch.to_string_lossy().to_string());
     if let Some(c) = &cookies { args.extend(c.ytdlp_args()); }
-    args.extend_from_slice(&["-f", "bestaudio", "-x", "--audio-format", "mp3", "--audio-quality", "1", "--embed-metadata", "--embed-thumbnail", "--write-thumbnail", "--ignore-errors"]);
+    args.extend(["-f", "bestaudio", "-x", "--audio-format", "mp3", "--audio-quality", "1", "--embed-metadata", "--embed-thumbnail", "--write-thumbnail", "--ignore-errors"].map(String::from));
     args.push("-o".into()); args.push(format!("{}/%(uploader)s/%(title)s.%(ext)s", dir));
 
     println!();

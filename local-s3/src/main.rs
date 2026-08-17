@@ -5,14 +5,14 @@ use std::path::PathBuf;
 
 struct Theme;
 impl Theme {
-    const HEADER: &'static str = "cyan";
-    const ACCENT: &'static str = "magenta";
-    const SUCCESS: &'static str = "green";
-    const ERROR: &'static str = "red";
-    const MUTED: &'static str = "dark_grey";
-    const WARN: &'static str = "yellow";
-    const LABEL: &'static str = "cyan";
-    const VALUE: &'static str = "bright_white";
+    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
+    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
+    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
+    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
+    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
+    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
+    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
+    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
 }
 fn header(s: &str) -> String { format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER)) }
 fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }
@@ -93,8 +93,13 @@ fn spawn_engine(engine: &str, data: &PathBuf) -> std::io::Result<Child> {
 }
 
 fn wait_healthy() -> bool {
+    let agent = ureq::Agent::new_with_config(
+        ureq::config::Config::builder()
+            .timeout_global(Some(std::time::Duration::from_millis(500)))
+            .build()
+    );
     for _ in 0..20 {
-        if ureq::get("http://127.0.0.1:9000/minio/health/live").timeout(std::time::Duration::from_millis(500)).call().is_ok() { return true; }
+        if agent.get("http://127.0.0.1:9000/minio/health/live").call().is_ok() { return true; }
         std::thread::sleep(std::time::Duration::from_millis(500));
     }
     false
