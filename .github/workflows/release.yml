@@ -38,7 +38,7 @@ jobs:
               echo "Building $name..."
               if cargo build --release --target ${{ matrix.target }} --manifest-path "$dir/Cargo.toml" 2>/dev/null; then
                 # Find the binary
-                bin_name=$(grep -oP 'name\s*=\s*"\K[^"]+' "$dir/Cargo.toml" | head -1)
+                bin_name=$(grep '^name\s*=' "$dir/Cargo.toml" | head -1 | sed 's/.*"\(.*\)".*/\1/')
                 if [ -z "$bin_name" ]; then
                   bin_name="$name"
                 fi
