@@ -1,0 +1,10 @@
+[plugin]
+name = "discord"
+scope = "proto"
+version = "0.1.0"
+description = "Discord bot project creator with templates"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/discord"
+
+[plugin.commands]
+discord = "bin/discord"

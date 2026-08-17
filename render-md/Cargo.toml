@@ -1,0 +1,12 @@
+[package]
+name = "render-md"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "render-md"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+pulldown-cmark = "0.9"

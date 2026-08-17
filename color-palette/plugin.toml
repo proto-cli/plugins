@@ -1,0 +1,10 @@
+[plugin]
+name = "color-palette"
+scope = "proto"
+version = "0.1.0"
+description = "ANSI color palette display"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/color-palette"
+
+[plugin.commands]
+color-palette = "bin/color-palette"

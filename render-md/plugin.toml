@@ -1,0 +1,10 @@
+[plugin]
+name = "render-md"
+scope = "proto"
+version = "0.1.0"
+description = "Terminal markdown renderer"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/render-md"
+
+[plugin.commands]
+render-md = "bin/render-md"

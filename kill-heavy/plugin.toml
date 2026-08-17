@@ -1,0 +1,10 @@
+[plugin]
+name = "kill-heavy"
+scope = "proto"
+version = "0.1.0"
+description = "Find and kill heavy processes"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/kill-heavy"
+
+[plugin.commands]
+kill-heavy = "bin/kill-heavy"

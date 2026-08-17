@@ -1,0 +1,10 @@
+[plugin]
+name = "webhook"
+scope = "proto"
+version = "0.1.0"
+description = "Webhook listener with ngrok tunnel support"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/webhook"
+
+[plugin.commands]
+webhook = "bin/webhook"

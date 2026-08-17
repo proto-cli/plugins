@@ -1,0 +1,10 @@
+[plugin]
+name = "battery"
+scope = "proto"
+version = "0.1.0"
+description = "Battery health diagnostics"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/battery"
+
+[plugin.commands]
+battery = "bin/battery"

@@ -1,0 +1,16 @@
+[package]
+name = "encrypt"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+owo-colors = "4"
+dialoguer = "0.11"
+base64 = "0.22"
+sha2 = "0.10"
+sha1 = "0.10"
+md5 = "0.7"
+uuid = { version = "1", features = ["v4"] }
+bcrypt = "0.16"
+indicatif = "0.17"

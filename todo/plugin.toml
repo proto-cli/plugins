@@ -1,0 +1,10 @@
+[plugin]
+name = "todo"
+scope = "proto"
+version = "0.1.0"
+description = "Simple todo list manager"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/todo"
+
+[plugin.commands]
+todo = "bin/todo"

@@ -1,0 +1,14 @@
+[package]
+name = "share-session"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "share-session"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+owo-colors = "4"
+dirs = "5"
+indicatif = "0.17"

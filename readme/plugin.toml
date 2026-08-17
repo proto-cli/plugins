@@ -1,0 +1,10 @@
+[plugin]
+name = "readme"
+scope = "proto"
+version = "0.1.0"
+description = "Generate a README.md from project info"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/readme"
+
+[plugin.commands]
+readme = "bin/readme"

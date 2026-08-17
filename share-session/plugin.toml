@@ -1,0 +1,10 @@
+[plugin]
+name = "share-session"
+scope = "proto"
+version = "0.1.0"
+description = "Terminal session sharing via sshx, tmate, tmux, vnc"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/share-session"
+
+[plugin.commands]
+share-session = "bin/share-session"

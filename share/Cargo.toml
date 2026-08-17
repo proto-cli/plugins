@@ -1,0 +1,15 @@
+[package]
+name = "share"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "share"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+owo-colors = "4"
+serde_json = "1"
+indicatif = "0.17"
+dialoguer = "0.11"

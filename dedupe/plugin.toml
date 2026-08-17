@@ -1,0 +1,10 @@
+[plugin]
+name = "dedupe"
+scope = "proto"
+version = "0.1.0"
+description = "Duplicate file finder"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/dedupe"
+
+[plugin.commands]
+dedupe = "bin/dedupe"

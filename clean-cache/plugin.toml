@@ -1,0 +1,10 @@
+[plugin]
+name = "clean-cache"
+scope = "proto"
+version = "0.1.0"
+description = "Clean package manager and tool caches"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/clean-cache"
+
+[plugin.commands]
+clean-cache = "bin/clean-cache"

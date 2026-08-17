@@ -1,0 +1,10 @@
+[plugin]
+name = "share"
+scope = "proto"
+version = "0.1.0"
+description = "Upload files via temporary link services"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/share"
+
+[plugin.commands]
+share = "bin/share"

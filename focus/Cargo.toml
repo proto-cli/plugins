@@ -1,0 +1,11 @@
+[package]
+name = "focus"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "focus"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"

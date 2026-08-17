@@ -1,0 +1,10 @@
+[plugin]
+name = "mc"
+scope = "proto"
+version = "0.1.0"
+description = "Minecraft resource pack utilities"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/mc"
+
+[plugin.commands]
+mc = "bin/mc"

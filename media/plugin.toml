@@ -1,0 +1,10 @@
+[plugin]
+name = "media"
+scope = "proto"
+version = "0.1.0"
+description = "Media compression — shrink images and videos"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/media"
+
+[plugin.commands]
+media = "bin/media"

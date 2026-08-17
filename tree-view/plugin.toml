@@ -1,0 +1,10 @@
+[plugin]
+name = "tree-view"
+scope = "proto"
+version = "0.1.0"
+description = "Folder tree viewer"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/tree-view"
+
+[plugin.commands]
+tree-view = "bin/tree-view"

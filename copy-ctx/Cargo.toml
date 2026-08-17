@@ -1,0 +1,13 @@
+[package]
+name = "copy-ctx"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "copy-ctx"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+indicatif = "0.17"
+dialoguer = "0.11"

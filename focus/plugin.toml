@@ -1,0 +1,10 @@
+[plugin]
+name = "focus"
+scope = "proto"
+version = "0.1.0"
+description = "Pomodoro focus timer"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/focus"
+
+[plugin.commands]
+focus = "bin/focus"

@@ -1,0 +1,10 @@
+[plugin]
+name = "qr"
+scope = "proto"
+version = "0.1.0"
+description = "QR code generator"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/qr"
+
+[plugin.commands]
+qr = "bin/qr"

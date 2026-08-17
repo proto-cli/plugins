@@ -1,0 +1,14 @@
+[package]
+name = "dedupe"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "dedupe"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+sha2 = "0.10"
+indicatif = "0.17"
+dialoguer = "0.11"

@@ -1,0 +1,10 @@
+[plugin]
+name = "encrypt"
+scope = "proto"
+version = "0.1.0"
+description = "Crypto operations — base64, hex, hash, uuid, bcrypt"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/encrypt"
+
+[plugin.commands]
+encrypt = "bin/encrypt"

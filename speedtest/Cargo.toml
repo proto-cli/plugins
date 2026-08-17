@@ -1,0 +1,13 @@
+[package]
+name = "speedtest"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "speedtest"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+ureq = "2"
+indicatif = "0.17"

@@ -1,0 +1,10 @@
+[plugin]
+name = "copy-ctx"
+scope = "proto"
+version = "0.1.0"
+description = "Clipboard context bundler for LLMs"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/copy-ctx"
+
+[plugin.commands]
+copy-ctx = "bin/copy-ctx"

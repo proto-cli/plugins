@@ -1,0 +1,12 @@
+[package]
+name = "search-docs"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "search-docs"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+ureq = "2"

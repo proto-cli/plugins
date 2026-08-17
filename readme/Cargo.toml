@@ -1,0 +1,13 @@
+[package]
+name = "readme"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "readme"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+owo-colors = "4"
+dialoguer = "0.11"
