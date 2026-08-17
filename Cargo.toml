@@ -25,7 +25,6 @@ members = [
     "local-s3",
     "manage",
     "mc",
-    "mc-server",
     "media",
     "memo",
     "port-forward",
