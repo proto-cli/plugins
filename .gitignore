@@ -1,0 +1,35 @@
+# Proto CLI Plugins
+
+Official plugins for the [proto CLI](https://github.com/proto-cli/proto).
+
+## Structure
+
+```
+plugins/
+├── shared/                    # Shared utility crate for plugins
+├── template/                  # Plugin template
+├── mc/                        # @proto/mc
+├── mc-server/                 # @proto/mc-server
+├── ai/                        # @proto/ai
+├── discord/                   # @proto/discord
+├── ...                        # More plugins
+└── .github/workflows/         # CI for building releases
+```
+
+## Quick Start
+
+```bash
+# Install a plugin
+proto plugins add mc-server
+
+# List installed plugins
+proto plugins list
+```
+
+## For Plugin Authors
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to create your own plugin.
+target/
+*.swp
+*.swo
+.DS_Store

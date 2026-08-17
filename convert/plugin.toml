@@ -1,0 +1,10 @@
+[plugin]
+name = "convert"
+scope = "proto"
+version = "0.1.0"
+description = "Convert between units - time, length, weight, digital, temperature, speed, volume"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/convert"
+
+[plugin.commands]
+convert = "bin/convert"

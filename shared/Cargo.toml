@@ -1,0 +1,12 @@
+[package]
+name = "proto-plugin-utils"
+version = "0.1.0"
+edition = "2021"
+description = "Shared utilities for proto CLI plugins"
+license = "MIT"
+
+[dependencies]
+owo-colors = "4"
+dirs = "5"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"

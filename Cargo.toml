@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "template",
+    "shared",
+    "mc-server",
+    "convert",
+]
+resolver = "2"

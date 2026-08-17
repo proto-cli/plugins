@@ -1,0 +1,12 @@
+[package]
+name = "convert"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "proto-convert"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+owo-colors = "4"

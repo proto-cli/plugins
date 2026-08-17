@@ -1,0 +1,10 @@
+[package]
+name = "proto-plugin-template"
+version = "0.1.0"
+edition = "2021"
+description = "Template for creating proto CLI plugins"
+license = "MIT"
+
+[[bin]]
+name = "template"
+path = "src/main.rs"
