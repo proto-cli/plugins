@@ -1,46 +1,5 @@
 use clap::Parser;
-use owo_colors::OwoColorize;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-}
-
-fn header(text: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), text.style(Theme::HEADER))
-}
-fn success(msg: &str) -> String {
-    format!("{} {}", "✔".style(Theme::SUCCESS), msg)
-}
-fn error(msg: &str) -> String {
-    format!("{} {}", "✗".style(Theme::ERROR), msg)
-}
-fn warn(msg: &str) -> String {
-    format!("{} {}", "⚠".style(Theme::WARN), msg)
-}
-fn divider() -> String {
-    "─".repeat(40).dimmed().to_string()
-}
-
-fn which(binary: &str) -> bool {
-    std::process::Command::new("which")
-        .arg(binary)
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
-}
-
-fn run_command_output(program: &str, args: &[&str]) -> std::io::Result<String> {
-    let output = std::process::Command::new(program).args(args).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
-}
+use proto_plugin_sdk::*;
 
 const RECORD_TYPES: &[&str] = &["A", "AAAA", "CNAME", "MX", "TXT", "NS"];
 

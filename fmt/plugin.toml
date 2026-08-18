@@ -1,0 +1,10 @@
+[plugin]
+name = "fmt"
+scope = "proto"
+version = "0.1.0"
+description = "Universal formatter — auto-detects cargo fmt/prettier/black/gofmt"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/fmt"
+
+[plugin.commands]
+fmt = "bin/fmt"

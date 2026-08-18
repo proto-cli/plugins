@@ -36,8 +36,7 @@ dependencies = [
  "dialoguer",
  "dirs",
  "http",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "serde",
  "serde_json",
  "toml",
@@ -101,8 +100,7 @@ dependencies = [
  "clap",
  "dialoguer",
  "dirs",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -119,7 +117,7 @@ name = "asciicast"
 version = "0.1.0"
 dependencies = [
  "clap",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -128,8 +126,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "regex",
  "serde_json",
  "sha2",
@@ -160,7 +157,7 @@ name = "battery"
 version = "0.1.0"
 dependencies = [
  "clap",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -279,7 +276,7 @@ name = "cert"
 version = "0.1.0"
 dependencies = [
  "clap",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -345,14 +342,15 @@ dependencies = [
  "clap",
  "dialoguer",
  "dirs",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
 name = "color-palette"
 version = "0.1.0"
 dependencies = [
- "owo-colors",
+ "clap",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -391,7 +389,7 @@ name = "convert"
 version = "0.1.0"
 dependencies = [
  "clap",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -427,9 +425,9 @@ dependencies = [
 name = "copy-ctx"
 version = "0.1.0"
 dependencies = [
+ "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -516,9 +514,9 @@ dependencies = [
 name = "dedupe"
 version = "0.1.0"
 dependencies = [
+ "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "sha2",
 ]
 
@@ -596,8 +594,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -616,7 +613,7 @@ name = "dns"
 version = "0.1.0"
 dependencies = [
  "clap",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -625,7 +622,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -644,8 +641,7 @@ dependencies = [
  "clap",
  "dialoguer",
  "dirs",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "serde_json",
 ]
 
@@ -669,9 +665,8 @@ dependencies = [
  "bcrypt",
  "clap",
  "dialoguer",
- "indicatif",
  "md-5",
- "owo-colors",
+ "proto-plugin-sdk",
  "sha1",
  "sha2",
  "uuid",
@@ -742,10 +737,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "fmt"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "proto-plugin-sdk",
+]
+
+[[package]]
 name = "focus"
 version = "0.1.0"
 dependencies = [
- "owo-colors",
+ "clap",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -785,7 +789,8 @@ dependencies = [
 name = "gen-pass"
 version = "0.1.0"
 dependencies = [
- "owo-colors",
+ "clap",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -859,8 +864,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1125,7 +1129,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1156,6 +1160,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "lint"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "proto-plugin-sdk",
+]
+
+[[package]]
+name = "linux-raw-sys"
+version = "0.4.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d26c52dbd32dccf2d10cac7725f8eae5296885fb5703b261f7d0a0739ec807ab"
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1179,8 +1197,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "ureq 3.4.0",
 ]
 
@@ -1212,16 +1229,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "manage"
-version = "0.1.0"
-dependencies = [
- "clap",
- "dialoguer",
- "dirs",
- "owo-colors",
-]
-
-[[package]]
 name = "mc"
 version = "0.2.0"
 dependencies = [
@@ -1229,8 +1236,7 @@ dependencies = [
  "crc32fast",
  "dialoguer",
  "flate2",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "serde",
  "serde_json",
  "sysinfo",
@@ -1254,7 +1260,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1269,7 +1275,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1409,7 +1415,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1424,7 +1430,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1448,8 +1454,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1462,18 +1467,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "proto-plugin-template"
-version = "0.1.0"
-
-[[package]]
-name = "proto-plugin-utils"
+name = "proto-plugin-sdk"
 version = "0.1.0"
 dependencies = [
  "dirs",
+ "indicatif",
  "owo-colors",
  "serde",
+ "terminal_size",
  "toml",
 ]
+
+[[package]]
+name = "proto-plugin-template"
+version = "0.1.0"
 
 [[package]]
 name = "pulldown-cmark"
@@ -1529,8 +1536,9 @@ dependencies = [
 name = "qr"
 version = "0.1.0"
 dependencies = [
+ "clap",
  "image 0.24.9",
- "owo-colors",
+ "proto-plugin-sdk",
  "qrcode",
 ]
 
@@ -1597,7 +1605,8 @@ dependencies = [
 name = "reader"
 version = "0.1.0"
 dependencies = [
- "owo-colors",
+ "clap",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1606,7 +1615,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1659,7 +1668,8 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 name = "render-md"
 version = "0.1.0"
 dependencies = [
- "owo-colors",
+ "clap",
+ "proto-plugin-sdk",
  "pulldown-cmark",
 ]
 
@@ -1679,6 +1689,19 @@ dependencies = [
 
 [[package]]
 name = "rustix"
+version = "0.38.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fdb5bc1ae2baa591800df16c9ca78619bf65c0488b41b96ccec5d11220d8c154"
+dependencies = [
+ "bitflags 2.13.1",
+ "errno",
+ "libc",
+ "linux-raw-sys 0.4.15",
+ "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "rustix"
 version = "1.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190"
@@ -1686,7 +1709,7 @@ dependencies = [
  "bitflags 2.13.1",
  "errno",
  "libc",
- "linux-raw-sys",
+ "linux-raw-sys 0.12.1",
  "windows-sys 0.61.2",
 ]
 
@@ -1735,7 +1758,8 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 name = "search-docs"
 version = "0.1.0"
 dependencies = [
- "owo-colors",
+ "clap",
+ "proto-plugin-sdk",
  "ureq 2.12.1",
 ]
 
@@ -1746,8 +1770,7 @@ dependencies = [
  "clap",
  "dialoguer",
  "dirs",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "regex",
 ]
 
@@ -1831,8 +1854,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "serde_json",
 ]
 
@@ -1842,8 +1864,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dirs",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1880,8 +1901,8 @@ checksum = "8ed6a63f02c8539c91a8685a86f4099661ba3da017932f6ebbea6de3f0fa7c90"
 name = "speedtest"
 version = "0.1.0"
 dependencies = [
- "indicatif",
- "owo-colors",
+ "clap",
+ "proto-plugin-sdk",
  "ureq 2.12.1",
 ]
 
@@ -1897,8 +1918,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dialoguer",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -1969,8 +1989,26 @@ dependencies = [
  "fastrand",
  "getrandom 0.4.3",
  "once_cell",
- "rustix",
+ "rustix 1.1.4",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "terminal_size"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "21bebf2b7c9e0a515f6e0f8c51dc0f8e4696391e6f1ff30379559f8365fb0df7"
+dependencies = [
+ "rustix 0.38.44",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "test"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "proto-plugin-sdk",
 ]
 
 [[package]]
@@ -2068,8 +2106,9 @@ dependencies = [
 name = "todo"
 version = "0.1.0"
 dependencies = [
+ "clap",
  "dirs",
- "owo-colors",
+ "proto-plugin-sdk",
  "serde",
  "serde_json",
 ]
@@ -2119,7 +2158,8 @@ checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 name = "tree-view"
 version = "0.1.0"
 dependencies = [
- "owo-colors",
+ "clap",
+ "proto-plugin-sdk",
  "regex",
 ]
 
@@ -2325,8 +2365,7 @@ name = "webhook"
 version = "0.1.0"
 dependencies = [
  "clap",
- "indicatif",
- "owo-colors",
+ "proto-plugin-sdk",
  "serde_json",
 ]
 

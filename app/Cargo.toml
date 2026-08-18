@@ -4,8 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+proto-plugin-sdk = { path = "../shared" }
 clap = { version = "4", features = ["derive"] }
-owo-colors = "4"
 dialoguer = "0.11"
-indicatif = "0.17"
 dirs = "5"

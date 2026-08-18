@@ -1,77 +1,5 @@
 use clap::{Parser, Subcommand};
-use owo_colors::OwoColorize;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-}
-
-fn header(s: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER))
-}
-fn success(s: &str) -> String {
-    format!("{} {}", "✔".style(Theme::SUCCESS), s)
-}
-fn error(s: &str) -> String {
-    format!("{} {}", "✗".style(Theme::ERROR), s)
-}
-fn warn(s: &str) -> String {
-    format!("{} {}", "⚠".style(Theme::WARN), s)
-}
-fn muted(s: &str) -> String {
-    format!("{}", s.style(Theme::MUTED))
-}
-fn divider() -> String {
-    "─".repeat(50).dimmed().to_string()
-}
-fn label_value(label: &str, value: &str) -> String {
-    format!("  {}: {}", label.style(Theme::MUTED), value.style(Theme::ACCENT))
-}
-
-fn which(binary: &str) -> bool {
-    std::process::Command::new("which")
-        .arg(binary)
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
-}
-fn run_command_output(program: &str, args: &[&str]) -> std::io::Result<String> {
-    let output = std::process::Command::new(program).args(args).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
-}
-
-struct Spinner {
-    spinner: indicatif::ProgressBar,
-}
-impl Spinner {
-    fn new(msg: &str) -> Self {
-        let sp = indicatif::ProgressBar::new_spinner()
-            .with_message(msg.to_string())
-            .with_style(
-                indicatif::ProgressStyle::with_template("{spinner:.cyan} {msg}")
-                    .unwrap()
-                    .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
-            );
-        sp.enable_steady_tick(std::time::Duration::from_millis(80));
-        Self { spinner: sp }
-    }
-    fn update(&self, msg: &str) {
-        self.spinner.set_message(msg.to_string());
-    }
-    fn done(&self, msg: &str) {
-        self.spinner.finish_with_message(msg.to_string());
-    }
-    fn fail(&self, msg: &str) {
-        self.spinner.finish_with_message(format!("{} {}", "✗".style(Theme::ERROR), msg.style(Theme::ERROR)));
-    }
-}
+use proto_plugin_sdk::*;
 
 #[derive(Parser)]
 #[command(name = "app", about = "Application utilities")]
@@ -542,21 +470,6 @@ fn dir_size(path: &std::path::Path) -> u64 {
         }
     }
     total
-}
-
-fn format_size(bytes: u64) -> String {
-    const U: &[&str] = &["B", "KB", "MB", "GB"];
-    let mut v = bytes as f64;
-    let mut i = 0;
-    while v >= 1024.0 && i < U.len() - 1 {
-        v /= 1024.0;
-        i += 1;
-    }
-    if v < 10.0 {
-        format!("{:.1} {}", v, U[i])
-    } else {
-        format!("{:.0} {}", v, U[i])
-    }
 }
 
 fn snap(action: &SnapAction) {

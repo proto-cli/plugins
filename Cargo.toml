@@ -23,7 +23,6 @@ members = [
     "git-extras",
     "kill-heavy",
     "local-s3",
-    "manage",
     "mc",
     "media",
     "memo",
@@ -43,5 +42,8 @@ members = [
     "todo",
     "tree-view",
     "webhook",
+    "test",
+    "lint",
+    "fmt",
 ]
 resolver = "2"

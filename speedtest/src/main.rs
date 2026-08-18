@@ -1,60 +1,7 @@
-use indicatif::{ProgressBar, ProgressStyle};
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
+use proto_plugin_sdk::indicatif::{ProgressBar, ProgressStyle};
 use std::io::Read;
 use std::time::Instant;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-}
-
-fn header(text: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), text.style(Theme::HEADER))
-}
-
-fn divider() -> String {
-    "─".repeat(40).style(Theme::MUTED).to_string()
-}
-
-fn muted(msg: &str) -> String {
-    format!("{}", msg.style(Theme::MUTED))
-}
-
-fn success(msg: &str) -> String {
-    format!("{} {}", "✔".style(Theme::SUCCESS), msg)
-}
-
-struct Spinner {
-    pb: ProgressBar,
-}
-
-impl Spinner {
-    fn new(msg: &str) -> Self {
-        let pb = ProgressBar::new_spinner()
-            .with_message(msg.to_string())
-            .with_style(
-                ProgressStyle::with_template("{spinner:.cyan} {msg}")
-                    .unwrap()
-                    .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
-            );
-        pb.enable_steady_tick(std::time::Duration::from_millis(80));
-        Self { pb }
-    }
-
-    fn done(&self, msg: &str) {
-        self.pb.finish_with_message(msg.to_string());
-    }
-
-    fn fail(&self, msg: &str) {
-        self.pb.finish_with_message(
-            format!("{} {}", "✗".style(Theme::ERROR), msg.style(Theme::ERROR)),
-        );
-    }
-}
 
 fn main() {
     println!("{}", header("Speedtest"));

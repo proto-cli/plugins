@@ -8,6 +8,6 @@ name = "copy-ctx"
 path = "src/main.rs"
 
 [dependencies]
-owo-colors = "4"
-indicatif = "0.17"
+clap = { version = "4", features = ["derive"] }
+proto-plugin-sdk = { path = "../shared" }
 dialoguer = "0.11"

@@ -8,6 +8,7 @@ name = "qr"
 path = "src/main.rs"
 
 [dependencies]
-owo-colors = "4"
+clap = { version = "4", features = ["derive"] }
+proto-plugin-sdk = { path = "../shared" }
 qrcode = "0.14"
 image = "0.24"

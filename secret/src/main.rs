@@ -1,28 +1,6 @@
 use clap::{Subcommand, Parser};
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use regex::Regex;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-}
-fn header(s: &str) -> String { format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER)) }
-fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }
-fn error(s: &str) -> String { format!("{} {}", "✗".style(Theme::ERROR), s) }
-fn warn(s: &str) -> String { format!("{} {}", "⚠".style(Theme::WARN), s) }
-fn muted(s: &str) -> String { format!("{}", s.style(Theme::MUTED)) }
-fn divider() -> String { "─".repeat(40).dimmed().to_string() }
-
-struct Spinner;
-impl Spinner {
-    fn new(msg: &str) -> Self { print!("  ⠋ {}...", msg); std::io::Write::flush(&mut std::io::stdout()).ok(); Self }
-    fn done(&self, msg: &str) { println!("\r  ✔ {}", msg); }
-}
 
 #[derive(Parser)]
 #[command(name = "secret", about = "Scan and mask leaked secrets in shell history")]

@@ -1,12 +1,14 @@
 [package]
-name = "proto-plugin-utils"
+name = "proto-plugin-sdk"
 version = "0.1.0"
 edition = "2021"
-description = "Shared utilities for proto CLI plugins"
+description = "Shared SDK for proto CLI plugins — Theme, Spinner, helpers"
 license = "MIT"
 
 [dependencies]
 owo-colors = "4"
+indicatif = "0.17"
 dirs = "5"
 serde = { version = "1", features = ["derive"] }
 toml = "0.8"
+terminal_size = "0.3"

@@ -1,0 +1,10 @@
+[plugin]
+name = "lint"
+scope = "proto"
+version = "0.1.0"
+description = "Universal linter — auto-detects clippy/eslint/ruff/golangci-lint"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/lint"
+
+[plugin.commands]
+lint = "bin/lint"

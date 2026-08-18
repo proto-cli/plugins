@@ -1,28 +1,4 @@
-use owo_colors::OwoColorize;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-}
-
-fn header(text: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), text.style(Theme::HEADER))
-}
-
-fn divider() -> String {
-    "─".repeat(40).style(Theme::MUTED).to_string()
-}
-
-fn muted(msg: &str) -> String {
-    format!("{}", msg.style(Theme::MUTED))
-}
+use proto_plugin_sdk::*;
 
 fn main() {
     println!("{}", header("Color Palette"));

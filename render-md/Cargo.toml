@@ -8,5 +8,6 @@ name = "render-md"
 path = "src/main.rs"
 
 [dependencies]
-owo-colors = "4"
+clap = { version = "4", features = ["derive"] }
+proto-plugin-sdk = { path = "../shared" }
 pulldown-cmark = "0.9"

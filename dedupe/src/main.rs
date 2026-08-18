@@ -1,93 +1,10 @@
 use dialoguer::Select;
-use indicatif::{ProgressBar, ProgressStyle};
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
+use proto_plugin_sdk::indicatif::{ProgressBar, ProgressStyle};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::io::Read;
 use std::path::{Path, PathBuf};
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-}
-
-fn header(text: &str) -> String {
-    format!(
-        "{} {}",
-        "◆".style(Theme::ACCENT),
-        text.style(Theme::HEADER)
-    )
-}
-
-fn divider() -> String {
-    "─".repeat(40).style(Theme::MUTED).to_string()
-}
-
-fn muted(msg: &str) -> String {
-    format!("{}", msg.style(Theme::MUTED))
-}
-
-fn success(msg: &str) -> String {
-    format!("{} {}", "✔".style(Theme::SUCCESS), msg)
-}
-
-fn warn(msg: &str) -> String {
-    format!("{} {}", "⚠".style(Theme::WARN), msg)
-}
-
-fn error(msg: &str) -> String {
-    format!("{} {}", "✗".style(Theme::ERROR), msg)
-}
-
-fn label_value(label: &str, value: &str) -> String {
-    format!(
-        "{} {}",
-        format!("{:>14}:", label).style(Theme::ACCENT),
-        value.style(Theme::VALUE)
-    )
-}
-
-fn format_size(bytes: u64) -> String {
-    const UNITS: &[&str] = &["B", "KB", "MB", "GB", "TB"];
-    if bytes < 1024 {
-        return format!("{} B", bytes);
-    }
-    let mut v = bytes as f64;
-    let mut i = 0;
-    while v >= 1024.0 && i < UNITS.len() - 1 {
-        v /= 1024.0;
-        i += 1;
-    }
-    format!("{:.1} {}", v, UNITS[i])
-}
-
-struct Spinner {
-    pb: ProgressBar,
-}
-
-impl Spinner {
-    fn new(msg: &str) -> Self {
-        let pb = ProgressBar::new_spinner()
-            .with_message(msg.to_string())
-            .with_style(
-                ProgressStyle::with_template("{spinner:.cyan} {msg}")
-                    .unwrap()
-                    .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
-            );
-        pb.enable_steady_tick(std::time::Duration::from_millis(80));
-        Self { pb }
-    }
-
-    fn done(&self, msg: &str) {
-        self.pb.finish_with_message(msg.to_string());
-    }
-}
 
 #[derive(Clone)]
 struct FileEntry {

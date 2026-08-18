@@ -1,34 +1,7 @@
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use std::io::{self, Write};
 use std::thread;
 use std::time::{Duration, Instant};
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
-}
-
-fn header(text: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), text.style(Theme::HEADER))
-}
-
-fn divider() -> String {
-    "─".repeat(40).style(Theme::MUTED).to_string()
-}
-
-fn muted(msg: &str) -> String {
-    format!("{}", msg.style(Theme::MUTED))
-}
-
-fn success(msg: &str) -> String {
-    format!("{} {}", "✔".style(Theme::SUCCESS), msg)
-}
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();

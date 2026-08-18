@@ -8,5 +8,6 @@ name = "search-docs"
 path = "src/main.rs"
 
 [dependencies]
-owo-colors = "4"
+clap = { version = "4", features = ["derive"] }
+proto-plugin-sdk = { path = "../shared" }
 ureq = "2"

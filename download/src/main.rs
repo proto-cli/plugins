@@ -1,50 +1,8 @@
 use clap::{Parser, Subcommand, ValueEnum};
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-}
-
-fn header(s: &str) -> String { format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER)) }
-fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }
-fn error(s: &str) -> String { format!("{} {}", "✗".style(Theme::ERROR), s) }
-fn warn(s: &str) -> String { format!("{} {}", "⚠".style(Theme::WARN), s) }
-fn divider() -> String { "─".repeat(50).dimmed().to_string() }
-fn label_value(label: &str, value: &str) -> String {
-    format!("  {}: {}", label.style(Theme::MUTED), value.style(Theme::ACCENT))
-}
-
-fn which(binary: &str) -> bool {
-    std::process::Command::new("which").arg(binary)
-        .stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null())
-        .status().map(|s| s.success()).unwrap_or(false)
-}
-
-struct Spinner {
-    spinner: indicatif::ProgressBar,
-}
-impl Spinner {
-    fn new(msg: &str) -> Self {
-        let sp = indicatif::ProgressBar::new_spinner().with_message(msg.to_string())
-            .with_style(indicatif::ProgressStyle::with_template("{spinner:.cyan} {msg}").unwrap()
-                .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]));
-        sp.enable_steady_tick(std::time::Duration::from_millis(80));
-        Self { spinner: sp }
-    }
-    fn done(&self, msg: &str) { self.spinner.finish_with_message(msg.to_string()); }
-    fn fail(&self, msg: &str) {
-        self.spinner.finish_with_message(format!("{} {}", "✗".style(Theme::ERROR), msg.style(Theme::ERROR)));
-    }
-}
 
 const SOUNDCLOUD_LOG: &str = "download_log.txt";
 const SOUNDCLOUD_ERROR_LOG: &str = "download_log_ERROR.txt";

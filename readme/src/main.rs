@@ -1,29 +1,5 @@
 use clap::Parser;
-use owo_colors::OwoColorize;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-}
-
-fn header(text: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), text.style(Theme::HEADER))
-}
-fn success(msg: &str) -> String {
-    format!("{} {}", "✔".style(Theme::SUCCESS), msg)
-}
-fn error(msg: &str) -> String {
-    format!("{} {}", "✗".style(Theme::ERROR), msg)
-}
-fn muted(msg: &str) -> String {
-    format!("{}", msg.style(Theme::MUTED))
-}
-
+use proto_plugin_sdk::*;
 #[derive(Parser)]
 #[command(name = "readme", about = "Generate a README.md")]
 struct Cli {

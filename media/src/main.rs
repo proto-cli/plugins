@@ -1,34 +1,9 @@
 use clap::{Subcommand, Parser};
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use std::path::{Path, PathBuf};
 
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-}
-fn header(s: &str) -> String { format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER)) }
-fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }
-fn error(s: &str) -> String { format!("{} {}", "✗".style(Theme::ERROR), s) }
-fn warn(s: &str) -> String { format!("{} {}", "⚠".style(Theme::WARN), s) }
-fn muted(s: &str) -> String { format!("{}", s.style(Theme::MUTED)) }
-fn divider() -> String { "─".repeat(40).dimmed().to_string() }
-fn label_value(label: &str, value: &str) -> String { format!("  {}: {}", label.style(Theme::MUTED), value.style(Theme::ACCENT)) }
-fn which(binary: &str) -> bool { std::process::Command::new("which").arg(binary).stdout(std::process::Stdio::null()).stderr(std::process::Stdio::null()).status().map(|s| s.success()).unwrap_or(false) }
-fn run_command(program: &str, args: &[&str]) -> std::io::Result<std::process::ExitStatus> { std::process::Command::new(program).args(args).stdin(std::process::Stdio::inherit()).stdout(std::process::Stdio::inherit()).stderr(std::process::Stdio::inherit()).status() }
-fn format_size(bytes: u64) -> String { const U: &[&str] = &["B", "KB", "MB", "GB"]; let mut v = bytes as f64; let mut i = 0; while v >= 1024.0 && i < U.len() - 1 { v /= 1024.0; i += 1; } if v < 10.0 { format!("{:.1} {}", v, U[i]) } else { format!("{:.0} {}", v, U[i]) } }
-
-trait Truncate { fn truncate(&self, n: usize) -> String; }
-impl Truncate for String { fn truncate(&self, n: usize) -> String { if self.chars().count() <= n { self.clone() } else { let mut out: String = self.chars().take(n - 3).collect(); out.push_str("..."); out } } }
-
 #[derive(Parser)]
-#[command(name = "media", about = "Media compression — shrink images and videos")]
+#[command(name = "media", about = "Media file optimization")]
 struct Cli {
     #[command(subcommand)]
     action: MediaAction,
@@ -38,6 +13,10 @@ struct Cli {
 enum MediaAction { Shrink { #[arg(value_name = "FILE|DIR", default_value = ".")] target: String } }
 
 enum MediaResult { Ok(String), Unchanged(String), Skipped(String) }
+
+fn truncate_str(s: &str, max: usize) -> String {
+    if s.len() <= max { s.to_string() } else { format!("{}…", &s[..max - 1]) }
+}
 
 fn main() {
     let cli = Cli::parse();
@@ -62,8 +41,8 @@ fn shrink(target: &str) {
             _ => MediaResult::Skipped("unsupported extension".to_string()),
         };
         match result {
-            MediaResult::Ok(delta) => { let after = std::fs::metadata(f).map(|m| m.len()).unwrap_or(0); total_before += before; total_after += after; processed += 1; println!("  {} {:<28} {} → {}  {}", "✔".style(Theme::SUCCESS), name.truncate(28), format_size(before), format_size(after), delta.style(Theme::ACCENT)); }
-            MediaResult::Unchanged(reason) | MediaResult::Skipped(reason) => { skipped += 1; println!("  {} {:<28} {}", "·".style(Theme::MUTED), name.truncate(28), reason.dimmed()); }
+            MediaResult::Ok(delta) => { let after = std::fs::metadata(f).map(|m| m.len()).unwrap_or(0); total_before += before; total_after += after; processed += 1; println!("  {} {:<28} {} → {}  {}", "✔".style(Theme::SUCCESS), truncate_str(&name, 28), format_size(before), format_size(after), delta.style(Theme::ACCENT)); }
+            MediaResult::Unchanged(reason) | MediaResult::Skipped(reason) => { skipped += 1; println!("  {} {:<28} {}", "·".style(Theme::MUTED), truncate_str(&name, 28), reason.dimmed()); }
         }
     }
     println!(); println!("{}", divider());

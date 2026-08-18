@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use serde::Deserialize;
 use std::io::{Read, Write};
 use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
@@ -7,44 +7,6 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 // ─── Theme ──────────────────────────────────────────────────────────────────
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-}
-
-fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }
-fn error(s: &str) -> String { format!("{} {}", "✗".style(Theme::ERROR), s) }
-fn warn(s: &str) -> String { format!("{} {}", "⚠".style(Theme::WARN), s) }
-fn divider() -> String { "─".repeat(50).dimmed().to_string() }
-fn label_value(label: &str, value: &str) -> String {
-    format!("  {} {}", format!("{}:", label).style(Theme::LABEL), value.style(Theme::VALUE))
-}
-
-struct Spinner {
-    spinner: indicatif::ProgressBar,
-}
-impl Spinner {
-    fn new(msg: &str) -> Self {
-        let sp = indicatif::ProgressBar::new_spinner().with_message(msg.to_string())
-            .with_style(indicatif::ProgressStyle::with_template("{spinner:.cyan} {msg}").unwrap()
-                .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]));
-        sp.enable_steady_tick(Duration::from_millis(80));
-        Self { spinner: sp }
-    }
-    fn done(&self, msg: &str) { self.spinner.finish_with_message(msg.to_string()); }
-    fn fail(&self, msg: &str) {
-        self.spinner.finish_with_message(format!("{} {}", "✗".style(Theme::ERROR), msg.style(Theme::ERROR)));
-    }
-    fn update(&self, msg: &str) { self.spinner.set_message(msg.to_string()); }
-}
 
 // ─── CLI ────────────────────────────────────────────────────────────────────
 
@@ -577,7 +539,8 @@ fn read_slp_response(stream: &mut TcpStream) -> Result<String, ()> {
     let remaining = &packet[offset..];
     let (json_len, json_offset) = read_varint(remaining);
     let json_bytes = &remaining[json_offset..json_offset + json_len as usize];
-    Ok(String::from_utf8_lossy(json_bytes).to_string())
+    let json_str = String::from_utf8(json_bytes.to_vec()).map_err(|_| ())?;
+    Ok(json_str)
 }
 
 // ─── IP parsing ─────────────────────────────────────────────────────────────

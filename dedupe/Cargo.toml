@@ -8,7 +8,7 @@ name = "dedupe"
 path = "src/main.rs"
 
 [dependencies]
-owo-colors = "4"
+clap = { version = "4", features = ["derive"] }
+proto-plugin-sdk = { path = "../shared" }
 sha2 = "0.10"
-indicatif = "0.17"
 dialoguer = "0.11"

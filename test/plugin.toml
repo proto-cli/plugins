@@ -1,0 +1,10 @@
+[plugin]
+name = "test"
+scope = "proto"
+version = "0.1.0"
+description = "Universal test runner — auto-detects cargo/npm/go/pytest"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/test"
+
+[plugin.commands]
+test = "bin/test"

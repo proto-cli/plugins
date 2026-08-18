@@ -1,53 +1,5 @@
 use clap::{Parser, Subcommand};
-use owo_colors::OwoColorize;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-}
-
-fn divider() -> String { "─".repeat(50).dimmed().to_string() }
-fn label_value(label: &str, value: &str) -> String {
-    format!("  {}: {}", label.style(Theme::MUTED), value.style(Theme::ACCENT))
-}
-fn proto_banner() -> String {
-    format!(
-        "{}\n{}\n{}\n{}\n{}\n{}\n{}",
-        "    ⣀⡀".cyan(),
-        "⢠⣤⡀⣾⣿⣿⠀⣤⣤⡄".cyan(),
-        "⢿⣿⡇⠘⠛⠁⢸⣿⣿⠃".cyan(),
-        "⠈⣉⣤⣾⣿⣿⡆⠉⣴⣶⣶".cyan(),
-        "⣾⣿⣿⣿⣿⣿⣿⡀⠻⠟⠃".cyan(),
-        "⠙⠛⠻⢿⣿⣿⣿⡇".cyan(),
-        "    ⠈⠙⠋⠁".cyan(),
-    )
-}
-
-struct Spinner {
-    spinner: indicatif::ProgressBar,
-}
-impl Spinner {
-    fn new(msg: &str) -> Self {
-        let sp = indicatif::ProgressBar::new_spinner()
-            .with_message(msg.to_string())
-            .with_style(
-                indicatif::ProgressStyle::with_template("{spinner:.cyan} {msg}")
-                    .unwrap()
-                    .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
-            );
-        sp.enable_steady_tick(std::time::Duration::from_millis(80));
-        Self { spinner: sp }
-    }
-    fn done(&self, msg: &str) { self.spinner.finish_with_message(msg.to_string()); }
-    fn fail(&self, msg: &str) {
-        self.spinner.finish_with_message(format!("{} {}", "✗".style(Theme::ERROR), msg.style(Theme::ERROR)));
-    }
-}
+use proto_plugin_sdk::*;
 
 #[derive(Parser)]
 #[command(name = "discord", about = "Discord bot project management")]
@@ -78,6 +30,11 @@ enum BotAction {
         #[arg(long, value_name = "NAME", help = "Bot project name")]
         name: Option<String>,
     },
+}
+
+fn proto_banner() -> String {
+    use proto_plugin_sdk::OwoColorize;
+    format!("{} {}", "◆".style(Theme::ACCENT), "Proto Discord".style(Theme::HEADER))
 }
 
 fn main() {

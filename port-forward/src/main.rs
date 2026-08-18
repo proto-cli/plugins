@@ -1,33 +1,10 @@
 use clap::Parser;
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use std::net::{SocketAddr, TcpStream};
 use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-}
-fn header(s: &str) -> String { format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER)) }
-fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }
-fn error(s: &str) -> String { format!("{} {}", "✗".style(Theme::ERROR), s) }
-fn warn(s: &str) -> String { format!("{} {}", "⚠".style(Theme::WARN), s) }
-fn muted(s: &str) -> String { format!("{}", s.style(Theme::MUTED)) }
-fn divider() -> String { "─".repeat(40).dimmed().to_string() }
-fn label_value(label: &str, value: &str) -> String { format!("{} {}", format!("{:>14}:", label).style(Theme::LABEL), value.style(Theme::VALUE)) }
-fn which(binary: &str) -> bool {
-    Command::new("which").arg(binary).stdout(Stdio::null()).stderr(Stdio::null()).status().map(|s| s.success()).unwrap_or(false)
-}
-
 #[derive(Parser)]
 #[command(name = "port-forward", about = "SSH port forwarding with auto-retry")]
 struct Cli {

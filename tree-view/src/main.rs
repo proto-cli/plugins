@@ -1,18 +1,6 @@
+use proto_plugin_sdk::*;
 use regex::Regex;
 use std::path::{Path, PathBuf};
-
-struct Theme;
-impl Theme {
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-}
-
-fn error(msg: &str) -> String {
-    use owo_colors::OwoColorize;
-    format!("{} {}", "✗".style(Theme::ERROR), msg)
-}
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();

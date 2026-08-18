@@ -1,32 +1,5 @@
 use clap::{Subcommand, Parser};
-use owo_colors::OwoColorize;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-}
-fn header(s: &str) -> String { format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER)) }
-fn success(s: &str) -> String { format!("{} {}", "✔".style(Theme::SUCCESS), s) }
-fn error(s: &str) -> String { format!("{} {}", "✗".style(Theme::ERROR), s) }
-fn warn(s: &str) -> String { format!("{} {}", "⚠".style(Theme::WARN), s) }
-fn muted(s: &str) -> String { format!("{}", s.style(Theme::MUTED)) }
-fn divider() -> String { "─".repeat(40).dimmed().to_string() }
-fn label_value(label: &str, value: &str) -> String { format!("{} {}", format!("{:>14}:", label).style(Theme::LABEL), value.style(Theme::VALUE)) }
-
-struct Spinner;
-impl Spinner {
-    fn new(msg: &str) -> Self { print!("  ⠋ {}...", msg); std::io::Write::flush(&mut std::io::stdout()).ok(); Self }
-    fn update(&self, msg: &str) { print!("\r  ⠋ {}...", msg); std::io::Write::flush(&mut std::io::stdout()).ok(); }
-    fn done(&self, msg: &str) { println!("\r  ✔ {}", msg); }
-    fn fail(&self, msg: &str) { println!("\r  ✗ {}", msg); }
-}
+use proto_plugin_sdk::*;
 
 #[derive(Parser)]
 #[command(name = "status", about = "Network monitoring — ping, monitor, serve dashboard, report")]

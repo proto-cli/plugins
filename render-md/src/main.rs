@@ -1,31 +1,6 @@
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use pulldown_cmark::{CodeBlockKind, Event, HeadingLevel, Options, Parser, Tag};
 use std::io::{self, Write};
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-}
-
-fn header(text: &str) -> String {
-    format!(
-        "{} {}",
-        "◆".style(Theme::ACCENT),
-        text.style(Theme::HEADER)
-    )
-}
-
-fn divider() -> String {
-    "─".repeat(40).style(Theme::MUTED).to_string()
-}
-
-fn error(msg: &str) -> String {
-    format!("{} {}", "✗".style(Theme::ERROR), msg)
-}
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();

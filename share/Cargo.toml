@@ -8,8 +8,7 @@ name = "share"
 path = "src/main.rs"
 
 [dependencies]
+proto-plugin-sdk = { path = "../shared" }
 clap = { version = "4", features = ["derive"] }
-owo-colors = "4"
 serde_json = "1"
-indicatif = "0.17"
 dialoguer = "0.11"

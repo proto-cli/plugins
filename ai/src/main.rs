@@ -1,56 +1,8 @@
 use clap::{Parser, Subcommand};
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-}
-
-fn header(s: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), s.style(Theme::HEADER))
-}
-fn success(s: &str) -> String {
-    format!("{} {}", "✔".style(Theme::SUCCESS), s)
-}
-fn error(s: &str) -> String {
-    format!("{} {}", "✗".style(Theme::ERROR), s)
-}
-fn warn(s: &str) -> String {
-    format!("{} {}", "⚠".style(Theme::WARN), s)
-}
-fn muted(s: &str) -> String {
-    format!("{}", s.style(Theme::MUTED))
-}
-fn divider() -> String {
-    "─".repeat(50).dimmed().to_string()
-}
-fn label_value(label: &str, value: &str) -> String {
-    format!("  {}: {}", label.style(Theme::MUTED), value.style(Theme::ACCENT))
-}
-fn proto_banner() -> String {
-    format!(
-        "{}\n{}\n{}\n{}\n{}\n{}\n{}",
-        "    ⣀⡀".cyan(),
-        "⢠⣤⡀⣾⣿⣿⠀⣤⣤⡄".cyan(),
-        "⢿⣿⡇⠘⠛⠁⢸⣿⣿⠃".cyan(),
-        "⠈⣉⣤⣾⣿⣿⡆⠉⣴⣶⣶".cyan(),
-        "⣾⣿⣿⣿⣿⣿⣿⡀⠻⠟⠃".cyan(),
-        "⠙⠛⠻⢿⣿⣿⣿⡇".cyan(),
-        "    ⠈⠙⠋⠁".cyan(),
-    )
-}
-fn run_command_output(program: &str, args: &[&str]) -> std::io::Result<String> {
-    let output = std::process::Command::new(program).args(args).output()?;
-    Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())
-}
 
 #[derive(Parser)]
 #[command(name = "ai", about = "AI-powered CLI assistant")]
@@ -129,35 +81,6 @@ fn personality_prompt(personality: &str, custom: Option<&str>) -> String {
     }
 }
 
-struct Spinner {
-    spinner: indicatif::ProgressBar,
-}
-
-impl Spinner {
-    fn new(msg: &str) -> Self {
-        let sp = indicatif::ProgressBar::new_spinner()
-            .with_message(msg.to_string())
-            .with_style(
-                indicatif::ProgressStyle::with_template("{spinner:.cyan} {msg}")
-                    .unwrap()
-                    .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
-            );
-        sp.enable_steady_tick(std::time::Duration::from_millis(80));
-        Self { spinner: sp }
-    }
-    fn update(&self, msg: &str) {
-        self.spinner.set_message(msg.to_string());
-    }
-    fn done(&self, msg: &str) {
-        self.spinner.finish_with_message(msg.to_string());
-    }
-    fn fail(&self, msg: &str) {
-        self.spinner.finish_with_message(
-            format!("{} {}", "✗".style(Theme::ERROR), msg.style(Theme::ERROR))
-        );
-    }
-}
-
 fn main() {
     let cli = Cli::parse();
     match &cli.action {
@@ -166,6 +89,10 @@ fn main() {
         AiAction::Summarize { from, to, output } => summarize(from.as_deref(), to, output),
         AiAction::Explain => explain(),
     }
+}
+
+fn proto_banner() -> String {
+    format!("{} {}", "◆".style(Theme::ACCENT), "Proto AI".style(Theme::HEADER))
 }
 
 fn setup() {

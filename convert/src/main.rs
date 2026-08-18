@@ -1,28 +1,10 @@
 use std::fmt;
 
 use clap::{Parser, Subcommand};
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 
-// ---------------------------------------------------------------------------
-// Theme helpers (mirrors proto's palette)
-// ---------------------------------------------------------------------------
-
-struct Theme;
-
-impl Theme {
-    fn header(s: &str) -> String {
-        format!("{}", s.bold().bright_blue())
-    }
-    fn accent(s: &str) -> String {
-        format!("{}", s.bold().bright_cyan())
-    }
-    fn muted(s: &str) -> String {
-        format!("{}", s.dimmed())
-    }
-}
-
-fn divider() {
-    println!("{}", Theme::muted(&"─".repeat(50)));
+fn accent(text: &str) -> String {
+    format!("{}", text.style(Theme::ACCENT))
 }
 
 // ---------------------------------------------------------------------------
@@ -284,10 +266,10 @@ fn format_value(v: f64) -> String {
 fn print_converted(value: f64, from_sym: &str, to_sym: &str, result: f64) {
     println!(
         "{} {} = {} {}",
-        Theme::accent(&format_value(value)),
-        Theme::header(from_sym),
-        Theme::accent(&format_value(result)),
-        Theme::header(to_sym),
+        accent(&format_value(value)),
+        header(from_sym),
+        accent(&format_value(result)),
+        header(to_sym),
     );
 }
 
@@ -295,8 +277,8 @@ fn print_category_list(value: f64, from: &UnitDef) {
     println!();
     println!(
         "{} {} conversions",
-        Theme::header("◆"),
-        Theme::header(&from.category.to_string()),
+        header("◆"),
+        header(&from.category.to_string()),
     );
     divider();
 
@@ -307,20 +289,20 @@ fn print_category_list(value: f64, from: &UnitDef) {
         if target.symbol == from.symbol {
             println!(
                 "  {} {} {}",
-                Theme::muted("▸"),
-                Theme::accent(&format!("{} (base)", from.symbol)),
-                Theme::muted("(you are here)"),
+                muted("▸"),
+                accent(&format!("{} (base)", from.symbol)),
+                muted("(you are here)"),
             );
             continue;
         }
         let result = convert(value, from, target);
         println!(
             "  {} {} {} {} {}",
-            Theme::muted("▸"),
-            Theme::accent(&format_value(result)),
-            Theme::header(target.symbol),
-            Theme::muted("←"),
-            Theme::muted(&format!("{} {}", format_value(value), from.symbol)),
+            muted("▸"),
+            accent(&format_value(result)),
+            header(target.symbol),
+            muted("←"),
+            muted(&format!("{} {}", format_value(value), from.symbol)),
         );
     }
     println!();
@@ -338,7 +320,7 @@ fn main() {
             let (value, from_sym) = match parse_input(&input) {
                 Ok(v) => v,
                 Err(e) => {
-                    eprintln!("{} {e}", Theme::header("error:"));
+                    eprintln!("{} {e}", header("error:"));
                     std::process::exit(1);
                 }
             };
@@ -346,11 +328,11 @@ fn main() {
             let from = match find_unit(from_sym) {
                 Some(u) => u,
                 None => {
-                    eprintln!("{} unknown unit '{from_sym}'", Theme::header("error:"));
+                    eprintln!("{} unknown unit '{from_sym}'", header("error:"));
                     eprintln!(
                         "{} supported units: {}",
-                        Theme::muted("hint:"),
-                        Theme::muted(
+                        muted("hint:"),
+                        muted(
                             &all_units()
                                 .iter()
                                 .map(|u| u.symbol)
@@ -369,7 +351,7 @@ fn main() {
                         None => {
                             eprintln!(
                                 "{} unknown unit '{target_sym}'",
-                                Theme::header("error:")
+                                header("error:")
                             );
                             std::process::exit(1);
                         }
@@ -378,7 +360,7 @@ fn main() {
                     if from.category != to.category {
                         eprintln!(
                             "{} cannot convert {} ({}) to {} ({})",
-                            Theme::header("error:"),
+                            header("error:"),
                             from.symbol,
                             from.category,
                             to.symbol,

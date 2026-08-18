@@ -1,43 +1,6 @@
 use clap::Parser;
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use std::process::Command;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const ERROR: owo_colors::Style = owo_colors::Style::new().bright_red();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-}
-
-fn header(text: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), text.style(Theme::HEADER))
-}
-fn error(msg: &str) -> String {
-    format!("{} {}", "✗".style(Theme::ERROR), msg)
-}
-fn warn(msg: &str) -> String {
-    format!("{} {}", "⚠".style(Theme::WARN), msg)
-}
-fn muted(msg: &str) -> String {
-    format!("{}", msg.style(Theme::MUTED))
-}
-fn divider() -> String {
-    "─".repeat(40).dimmed().to_string()
-}
-
-fn which(binary: &str) -> bool {
-    Command::new("which")
-        .arg(binary)
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
-        .unwrap_or(false)
-}
 
 #[derive(Parser)]
 #[command(name = "asciicast", about = "Terminal session recording")]

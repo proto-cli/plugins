@@ -1,10 +1,12 @@
 [package]
-name = "manage"
+name = "lint"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "lint"
+path = "src/main.rs"
+
 [dependencies]
+proto-plugin-sdk = { path = "../shared" }
 clap = { version = "4", features = ["derive"] }
-owo-colors = "4"
-dialoguer = "0.11"
-dirs = "5"

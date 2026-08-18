@@ -1,45 +1,6 @@
-use owo_colors::OwoColorize;
+use proto_plugin_sdk::*;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-
-struct Theme;
-impl Theme {
-    const HEADER: owo_colors::Style = owo_colors::Style::new().bold().bright_blue();
-    const ACCENT: owo_colors::Style = owo_colors::Style::new().bold().cyan();
-    const MUTED: owo_colors::Style = owo_colors::Style::new().dimmed();
-    const SUCCESS: owo_colors::Style = owo_colors::Style::new().bright_green();
-    const WARN: owo_colors::Style = owo_colors::Style::new().bright_yellow();
-    const VALUE: owo_colors::Style = owo_colors::Style::new().bright_white();
-    const LABEL: owo_colors::Style = owo_colors::Style::new().bright_cyan();
-}
-
-fn header(text: &str) -> String {
-    format!("{} {}", "◆".style(Theme::ACCENT), text.style(Theme::HEADER))
-}
-
-fn divider() -> String {
-    "─".repeat(40).style(Theme::MUTED).to_string()
-}
-
-fn muted(msg: &str) -> String {
-    format!("{}", msg.style(Theme::MUTED))
-}
-
-fn success(msg: &str) -> String {
-    format!("{} {}", "✔".style(Theme::SUCCESS), msg)
-}
-
-fn warn(msg: &str) -> String {
-    format!("{} {}", "⚠".style(Theme::WARN), msg)
-}
-
-fn label_value(label: &str, value: &str) -> String {
-    format!(
-        "{} {}",
-        format!("{:>14}:", label).style(Theme::LABEL),
-        value.style(Theme::VALUE)
-    )
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Task {
