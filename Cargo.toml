@@ -45,6 +45,8 @@ members = [
     "share-session",
     "speedtest",
     "status",
+    "storage",
+    "template",
     "todo",
     "tree-view",
     "webhook",

@@ -1,0 +1,18 @@
+[package]
+name = "storage"
+version = "0.1.0"
+edition = "2021"
+description = "Insane storage cleaner — caches, docker, dev artifacts, duplicates, git bloat, coredumps"
+license = "MIT"
+
+[[bin]]
+name = "storage"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+owo-colors = "4"
+dialoguer = "0.11"
+dirs = "5"
+sha2 = "0.10"
+walkdir = "2"

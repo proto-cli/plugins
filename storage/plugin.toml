@@ -1,0 +1,10 @@
+[plugin]
+name = "storage"
+scope = "proto"
+version = "0.1.0"
+description = "Insane storage cleaner — caches, docker, dev artifacts, duplicates, git bloat, coredumps"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/storage"
+
+[plugin.commands]
+storage = "bin/storage"
