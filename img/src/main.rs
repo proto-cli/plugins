@@ -9,9 +9,10 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Wrap},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
     Frame, Terminal,
 };
+use std::io::Read;
 use std::path::{Path, PathBuf};
 
 struct Theme;
@@ -61,7 +62,6 @@ enum Operation {
     ThugLife,
     Drakeno,
     ThisIsFine,
-    ASCII,
 }
 
 impl Operation {
@@ -84,7 +84,6 @@ impl Operation {
             Operation::ThugLife => "Thug Life Glasses",
             Operation::Drakeno => "Drake No (reject)",
             Operation::ThisIsFine => "This Is Fine ☕",
-            Operation::ASCII => "ASCII Art Export",
         }
     }
 
@@ -97,7 +96,6 @@ impl Operation {
             | Operation::Invert => "Effects",
             Operation::MemeOverlay | Operation::SpeechBubble | Operation::ThugLife
             | Operation::Drakeno | Operation::ThisIsFine => "Meme",
-            Operation::ASCII => "Export",
         }
     }
 
@@ -129,7 +127,6 @@ impl Operation {
             Operation::ThugLife,
             Operation::Drakeno,
             Operation::ThisIsFine,
-            Operation::ASCII,
         ]
     }
 }
@@ -141,7 +138,6 @@ struct App {
     op_state: ListState,
     active: Panel,
     status_msg: String,
-    preview_ascii: Option<String>,
     input_buf: String,
     input_mode: bool,
     input_prompt: String,
@@ -162,7 +158,6 @@ impl App {
             op_state: os,
             active: Panel::Files,
             status_msg: String::new(),
-            preview_ascii: None,
             input_buf: String::new(),
             input_mode: false,
             input_prompt: String::new(),
@@ -197,28 +192,6 @@ fn scan_images(dir: &Path) -> Vec<ImageFile> {
     }
     images.sort_by(|a, b| a.name.cmp(&b.name));
     images
-}
-
-fn image_to_ascii(img: &DynamicImage, width: usize) -> String {
-    let chars = " .:-=+*#%@";
-    let gray = img.to_luma8();
-    let (iw, ih) = gray.dimensions();
-    let ratio = ih as f64 / iw as f64 * 0.55; // terminal char aspect ratio
-    let height = (width as f64 * ratio) as u32;
-    let resized = imageops::resize(&gray, width as u32, height, imageops::FilterType::Nearest);
-    let (rw, rh) = resized.dimensions();
-    let buf = resized.into_raw();
-    let mut out = String::new();
-    for y in 0..rh {
-        for x in 0..rw {
-            let idx = (y * rw + x) as usize;
-            let val = buf[idx] as usize;
-            let ci = (val * (chars.len() - 1)) / 255;
-            out.push(chars.as_bytes()[ci] as char);
-        }
-        out.push('\n');
-    }
-    out
 }
 
 fn apply_operation(img: &mut DynamicImage, op: &Operation, param: &str) -> Result<String, String> {
@@ -458,7 +431,6 @@ fn apply_operation(img: &mut DynamicImage, op: &Operation, param: &str) -> Resul
             *img = DynamicImage::ImageRgba8(out);
             Ok("This Is Fine 🔥 applied".into())
         }
-        Operation::ASCII => Ok("ascii".into()),
     }
 }
 
@@ -567,11 +539,7 @@ fn render_preview(f: &mut Frame, app: &mut App, area: Rect) {
         .borders(Borders::ALL)
         .border_style(Theme::ACCENT);
 
-    if let Some(ref ascii) = app.preview_ascii {
-        let lines: Vec<Line> = ascii.lines().map(|l| Line::from(Span::styled(l.to_string(), Theme::VALUE))).collect();
-        let para = Paragraph::new(lines).block(block).wrap(Wrap { trim: false });
-        f.render_widget(para, area);
-    } else if let Some(idx) = app.file_state.selected() {
+    if let Some(idx) = app.file_state.selected() {
         if let Some(img_file) = app.files.get(idx) {
             let hint = vec![
                 Line::from(""),
@@ -584,9 +552,9 @@ fn render_preview(f: &mut Frame, app: &mut App, area: Rect) {
                     Theme::MUTED,
                 )),
                 Line::from(""),
-                Line::from(Span::styled(" Press Enter to apply op", Theme::MUTED)),
-                Line::from(Span::styled(" ESC to return to log", Theme::MUTED)),
-                Line::from(Span::styled(" s for ASCII preview", Theme::MUTED)),
+                Line::from(Span::styled(" p  preview (kitty icat)", Theme::ACCENT)),
+                Line::from(Span::styled(" Enter  apply operation", Theme::MUTED)),
+                Line::from(Span::styled(" Tab  switch panel", Theme::MUTED)),
             ];
             let para = Paragraph::new(hint).block(block);
             f.render_widget(para, area);
@@ -594,8 +562,7 @@ fn render_preview(f: &mut Frame, app: &mut App, area: Rect) {
     } else {
         let empty = vec![
             Line::from(""),
-            Line::from(Span::styled(" Select an image and press Enter", Theme::MUTED)),
-            Line::from(Span::styled(" to apply an operation.", Theme::MUTED)),
+            Line::from(Span::styled(" Select an image", Theme::MUTED)),
         ];
         let para = Paragraph::new(empty).block(block);
         f.render_widget(para, area);
@@ -690,23 +657,16 @@ fn main() -> std::io::Result<()> {
                                     &param,
                                 ) {
                                     Ok(msg) => {
-                                        if msg == "ascii" {
-                                            let img = image::open(&file.path).unwrap();
-                                            let ascii = image_to_ascii(&img, 80);
-                                            app.preview_ascii = Some(ascii);
-                                            app.status_msg = "ASCII preview generated".into();
-                                        } else {
-                                            let mut img = image::open(&file.path).unwrap();
-                                            if let Ok(msg) = apply_operation(&mut img, &op, &param) {
-                                                let out = file.path.with_file_name(format!(
-                                                    "{}_{}{}",
-                                                    file.path.file_stem().unwrap().to_string_lossy(),
-                                                    op.label().to_lowercase().replace(' ', "_"),
-                                                    file.path.extension().map(|e| format!(".{}", e.to_string_lossy())).unwrap_or_default()
-                                                ));
-                                                img.save(&out).unwrap();
-                                                app.status_msg = format!("{} → {}", msg, out.file_name().unwrap().to_string_lossy());
-                                            }
+                                        let mut img = image::open(&file.path).unwrap();
+                                        if let Ok(msg) = apply_operation(&mut img, &op, &param) {
+                                            let out = file.path.with_file_name(format!(
+                                                "{}_{}{}",
+                                                file.path.file_stem().unwrap().to_string_lossy(),
+                                                op.label().to_lowercase().replace(' ', "_"),
+                                                file.path.extension().map(|e| format!(".{}", e.to_string_lossy())).unwrap_or_default()
+                                            ));
+                                            img.save(&out).unwrap();
+                                            app.status_msg = format!("{} → {}", msg, out.file_name().unwrap().to_string_lossy());
                                         }
                                     }
                                     Err(e) => {
@@ -743,7 +703,6 @@ fn main() -> std::io::Result<()> {
                             Panel::Files => {
                                 let i = app.file_state.selected().unwrap_or(0).saturating_sub(1);
                                 app.file_state.select(Some(i));
-                                app.preview_ascii = None;
                             }
                             Panel::Operations => {
                                 let i = app.op_state.selected().unwrap_or(0).saturating_sub(1);
@@ -758,7 +717,6 @@ fn main() -> std::io::Result<()> {
                                 let i = (app.file_state.selected().unwrap_or(0) + 1)
                                     .min(app.files.len().saturating_sub(1));
                                 app.file_state.select(Some(i));
-                                app.preview_ascii = None;
                             }
                             Panel::Operations => {
                                 let i = (app.op_state.selected().unwrap_or(0) + 1)
@@ -802,20 +760,47 @@ fn main() -> std::io::Result<()> {
                             }
                         }
                     }
-                    KeyCode::Char('s') => {
+                    KeyCode::Char('p') => {
                         if let Some(idx) = app.file_state.selected() {
                             let file = &app.files[idx];
-                            match image::open(&file.path) {
-                                Ok(img) => {
-                                    let ascii = image_to_ascii(&img, 80);
-                                    app.preview_ascii = Some(ascii);
+                            // Exit TUI, show with kitty icat, wait for key, re-enter TUI
+                            disable_raw_mode().ok();
+                            execute!(terminal.backend_mut(), LeaveAlternateScreen).ok();
+                            terminal.show_cursor().ok();
+
+                            // Try kitten icat first, then kitty +kitten icat, then xdg-open
+                            let icat = ["kitten icat", "kitty +kitten icat"];
+                            let mut shown = false;
+                            for cmd in &icat {
+                                let parts: Vec<&str> = cmd.split_whitespace().collect();
+                                if std::process::Command::new(parts[0])
+                                    .args(&parts[1..])
+                                    .arg(file.path.to_str().unwrap_or(""))
+                                    .stdout(std::process::Stdio::null())
+                                    .stderr(std::process::Stdio::null())
+                                    .status()
+                                    .map(|s| s.success())
+                                    .unwrap_or(false)
+                                {
+                                    shown = true;
+                                    break;
                                 }
-                                Err(e) => app.status_msg = format!("✗ {}", e),
                             }
+                            if !shown {
+                                // Fallback: just print file info
+                                println!("\n  Preview: {}", file.path.display());
+                                println!("  {}×{} px\n", file.w, file.h);
+                            }
+
+                            println!("  Press Enter to return...");
+                            let mut buf = [0u8; 1];
+                            let _ = std::io::stdin().read(&mut buf);
+
+                            // Re-enter TUI
+                            enable_raw_mode().ok();
+                            execute!(terminal.backend_mut(), EnterAlternateScreen).ok();
+                            terminal.hide_cursor().ok();
                         }
-                    }
-                    KeyCode::Char('r') => {
-                        app.preview_ascii = None;
                     }
                     _ => {}
                 }
