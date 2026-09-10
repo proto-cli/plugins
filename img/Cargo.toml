@@ -1,0 +1,19 @@
+[package]
+name = "img"
+version = "0.1.0"
+edition = "2021"
+description = "TUI image toolkit — resize, crop, meme templates, speech bubbles, effects"
+license = "MIT"
+
+[[bin]]
+name = "img"
+path = "src/main.rs"
+
+[dependencies]
+ratatui = { version = "0.29", features = ["crossterm"] }
+crossterm = "0.28"
+image = { version = "0.25", features = ["jpeg", "png", "gif", "bmp", "webp"] }
+imageproc = "0.25"
+rusttype = "0.9"
+owo-colors = "4"
+dialoguer = "0.11"

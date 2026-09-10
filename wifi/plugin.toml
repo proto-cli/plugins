@@ -1,0 +1,10 @@
+[plugin]
+name = "wifi"
+scope = "proto"
+version = "0.1.0"
+description = "WiFi manager TUI — scan, connect, hotspot, saved networks"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/wifi"
+
+[plugin.commands]
+wifi = "bin/wifi"

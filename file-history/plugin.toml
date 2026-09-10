@@ -1,0 +1,10 @@
+[plugin]
+name = "file-history"
+scope = "proto"
+version = "0.1.0"
+description = "Interactive file change history with live inotify + git log TUI"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/file-history"
+
+[plugin.commands]
+file-history = "bin/file-history"

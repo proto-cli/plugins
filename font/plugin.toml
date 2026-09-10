@@ -1,0 +1,10 @@
+[plugin]
+name = "font"
+scope = "proto"
+version = "0.1.0"
+description = "Font manager — list, preview, and install system fonts"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/font"
+
+[plugin.commands]
+font = "bin/font"

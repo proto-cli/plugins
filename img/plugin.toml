@@ -1,0 +1,10 @@
+[plugin]
+name = "img"
+scope = "proto"
+version = "0.1.0"
+description = "TUI image toolkit — resize, crop, meme templates, speech bubbles, effects"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/img"
+
+[plugin.commands]
+img = "bin/img"

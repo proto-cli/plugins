@@ -1,0 +1,10 @@
+[plugin]
+name = "pdf"
+scope = "proto"
+version = "0.1.0"
+description = "PDF toolkit — merge, split, compress, extract text"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/pdf"
+
+[plugin.commands]
+pdf = "bin/pdf"

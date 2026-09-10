@@ -63,6 +63,17 @@ enum GitExtrasAction {
     Impact,
     #[command(about = "Catch up with upstream changes")]
     Catchup,
+    #[command(about = "Create a release tag and optionally a GitHub release")]
+    Release {
+        #[arg(help = "Version string (e.g. 1.2.3 or v1.2.3)")]
+        version: Option<String>,
+        #[arg(short, long, help = "Push tag to origin")]
+        push: bool,
+        #[arg(short, long, help = "Create GitHub release via gh")]
+        github: bool,
+        #[arg(short, long, help = "Release notes")]
+        notes: Option<String>,
+    },
 }
 
 fn main() {
@@ -71,6 +82,7 @@ fn main() {
         GitExtrasAction::WhoBroke { args } => who_broke(args),
         GitExtrasAction::Impact => impact(),
         GitExtrasAction::Catchup => catchup(),
+        GitExtrasAction::Release { version, push, github, notes } => release(version.as_deref(), *push, *github, notes.as_deref()),
     }
 }
 
@@ -353,4 +365,206 @@ fn commit_category(msg: &str) -> &'static str {
     else if m.starts_with("doc") || m.starts_with("readme") { "docs" }
     else if m.starts_with("perf") || m.starts_with("optim") || m.starts_with("speed") { "perf" }
     else { "" }
+}
+
+fn detect_version() -> Option<String> {
+    // Cargo.toml
+    if let Ok(content) = std::fs::read_to_string("Cargo.toml") {
+        for line in content.lines() {
+            let trimmed = line.trim();
+            if trimmed.starts_with("version") && trimmed.contains('"') {
+                if let Some(v) = trimmed.split('"').nth(1) {
+                    return Some(v.to_string());
+                }
+            }
+        }
+    }
+    // package.json
+    if let Ok(content) = std::fs::read_to_string("package.json") {
+        if let Some(v) = content.lines().find(|l| l.contains("\"version\"")) {
+            if let Some(v) = v.split('"').nth(3) {
+                return Some(v.to_string());
+            }
+        }
+    }
+    // pyproject.toml
+    if let Ok(content) = std::fs::read_to_string("pyproject.toml") {
+        for line in content.lines() {
+            let trimmed = line.trim();
+            if trimmed.starts_with("version") && trimmed.contains('"') {
+                if let Some(v) = trimmed.split('"').nth(1) {
+                    return Some(v.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
+fn generate_changelog() -> String {
+    let mut out = String::new();
+    // Get commits since last tag
+    let last_tag = git_stdout(&["describe", "--tags", "--abbrev=0", "HEAD"]);
+    let range = match &last_tag {
+        Some(tag) => format!("{}..HEAD", tag),
+        None => "HEAD".into(),
+    };
+
+    let log = git_stdout(&["log", "--format=%h|%s|%an", &range]).unwrap_or_default();
+    let mut features = Vec::new();
+    let mut fixes = Vec::new();
+    let mut other = Vec::new();
+
+    for line in log.lines() {
+        let parts: Vec<&str> = line.splitn(3, '|').collect();
+        if parts.len() < 2 { continue; }
+        let (hash, msg) = (parts[0], parts[1]);
+        let cat = commit_category(msg);
+        let entry = format!("- {} ({})", msg, hash);
+        match cat {
+            "feature" => features.push(entry),
+            "fix" => fixes.push(entry),
+            _ => other.push(entry),
+        }
+    }
+
+    if !features.is_empty() {
+        out.push_str("### Features\n");
+        out.push_str(&features.join("\n"));
+        out.push_str("\n\n");
+    }
+    if !fixes.is_empty() {
+        out.push_str("### Fixes\n");
+        out.push_str(&fixes.join("\n"));
+        out.push_str("\n\n");
+    }
+    if !other.is_empty() {
+        out.push_str("### Other\n");
+        out.push_str(&other.join("\n"));
+        out.push_str("\n");
+    }
+    out
+}
+
+fn release(version: Option<&str>, do_push: bool, do_github: bool, notes: Option<&str>) {
+    if !which("git") || !is_git_repo() {
+        eprintln!("{} Must be inside a git repository.", error(""));
+        std::process::exit(1);
+    }
+
+    let ver = match version {
+        Some(v) => v.to_string(),
+        None => match detect_version() {
+            Some(v) => {
+                println!("  {} Detected version: {}", "→".dimmed(), v.style(Theme::VALUE));
+                v
+            }
+            None => {
+                eprintln!("{} No version provided and none detected from Cargo.toml/package.json/pyproject.toml.", error(""));
+                std::process::exit(1);
+            }
+        }
+    };
+
+    let tag = if ver.starts_with('v') { ver.clone() } else { format!("v{}", ver) };
+
+    println!("{} {}", "◆".style(Theme::ACCENT), "Create Release".style(Theme::HEADER));
+    println!("{}", divider());
+    println!("  {} {}", "Tag:".style(Theme::LABEL), tag.style(Theme::ACCENT));
+
+    // Check tag doesn't already exist
+    if git_ok(&["rev-parse", &tag]) {
+        eprintln!("  {} Tag '{}' already exists.", error(""), tag);
+        std::process::exit(1);
+    }
+
+    // Check working tree is clean
+    let dirty = git_stdout(&["status", "--porcelain"]).map(|s| !s.is_empty()).unwrap_or(false);
+    if dirty {
+        eprintln!("  {} Working tree is dirty. Commit or stash changes first.", error(""));
+        std::process::exit(1);
+    }
+
+    // Detect branch
+    let branch = git_stdout(&["branch", "--show-current"]).unwrap_or_else(|| "HEAD".to_string());
+    println!("  {} {}", "Branch:".style(Theme::LABEL), branch.style(Theme::VALUE));
+
+    // Generate changelog
+    let changelog = if notes.is_some() {
+        notes.unwrap().to_string()
+    } else {
+        println!("  {} Generating changelog...", "→".dimmed());
+        generate_changelog()
+    };
+
+    if !changelog.trim().is_empty() {
+        println!("\n  {}", "Release notes:".style(Theme::HEADER));
+        for line in changelog.lines().take(20) {
+            println!("  {}", line.style(Theme::MUTED));
+        }
+    }
+
+    // Create annotated tag
+    let mut tag_cmd = std::process::Command::new("git");
+    tag_cmd.args(["tag", "-a", &tag, "-m", &format!("Release {}", tag)]);
+
+    let sp = Spinner::new(&format!("Creating tag {}...", tag));
+    let status = tag_cmd.status();
+    match status {
+        Ok(s) if s.success() => sp.done(&format!("Tag {} created", tag)),
+        _ => { sp.fail("Failed to create tag"); std::process::exit(1); }
+    }
+
+    // Push tag
+    if do_push {
+        let sp = Spinner::new(&format!("Pushing {} to origin...", tag));
+        let ok = std::process::Command::new("git")
+            .args(["push", "origin", &tag])
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false);
+        if ok {
+            sp.done(&format!("Pushed {} to origin", tag));
+        } else {
+            sp.fail("Push failed — push manually with: git push origin <tag>");
+        }
+    }
+
+    // GitHub release
+    if do_github {
+        if !which("gh") {
+            eprintln!("  {} gh CLI not found — skipping GitHub release.", warn(""));
+        } else {
+            let sp = Spinner::new("Creating GitHub release...");
+            let mut cmd = std::process::Command::new("gh");
+            cmd.args(["release", "create", &tag, "--title", &tag]);
+            if !changelog.trim().is_empty() {
+                cmd.args(["--notes", &changelog]);
+            } else {
+                cmd.args(["--generate-notes"]);
+            }
+            let ok = cmd.stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false);
+            if ok {
+                sp.done("GitHub release created");
+            } else {
+                sp.fail("gh release create failed");
+            }
+        }
+    }
+
+    println!();
+    println!("{}", divider());
+    println!("  {} Release {} complete", success(""), tag.style(Theme::ACCENT).bold());
+    if !do_push {
+        println!("  {} Push tag with: git push origin {}", "→".dimmed(), tag.style(Theme::ACCENT));
+    }
+    if !do_github && which("gh") {
+        println!("  {} Create GitHub release with: gh release create {}", "→".dimmed(), tag.style(Theme::ACCENT));
+    }
 }

@@ -1,0 +1,16 @@
+[package]
+name = "font"
+version = "0.1.0"
+edition = "2021"
+description = "Font manager — list, preview, and install system fonts"
+license = "MIT"
+
+[[bin]]
+name = "font"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+dialoguer = "0.11"
+walkdir = "2"
+dirs = "5"

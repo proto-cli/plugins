@@ -1,0 +1,15 @@
+[package]
+name = "wifi"
+version = "0.1.0"
+edition = "2021"
+description = "WiFi manager TUI — scan, connect, hotspot, saved networks"
+license = "MIT"
+
+[[bin]]
+name = "wifi"
+path = "src/main.rs"
+
+[dependencies]
+ratatui = { version = "0.29", features = ["crossterm"] }
+crossterm = "0.28"
+owo-colors = "4"

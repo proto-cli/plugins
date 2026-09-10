@@ -1,0 +1,18 @@
+[package]
+name = "file-history"
+version = "0.1.0"
+edition = "2021"
+description = "Interactive file change history with live inotify + git log TUI"
+license = "MIT"
+
+[[bin]]
+name = "file-history"
+path = "src/main.rs"
+
+[dependencies]
+ratatui = { version = "0.29", features = ["crossterm"] }
+crossterm = "0.28"
+notify = "7"
+git2 = "0.19"
+chrono = "0.4"
+owo-colors = "4"

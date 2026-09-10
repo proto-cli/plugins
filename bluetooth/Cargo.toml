@@ -1,0 +1,15 @@
+[package]
+name = "bluetooth"
+version = "0.1.0"
+edition = "2021"
+description = "Bluetooth manager TUI — scan, pair, connect, devices"
+license = "MIT"
+
+[[bin]]
+name = "bluetooth"
+path = "src/main.rs"
+
+[dependencies]
+ratatui = { version = "0.29", features = ["crossterm"] }
+crossterm = "0.28"
+owo-colors = "4"
