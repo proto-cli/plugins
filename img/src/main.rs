@@ -165,6 +165,14 @@ impl App {
     }
 }
 
+fn binary_on_path(binary: &str) -> bool {
+    std::env::var_os("PATH")
+        .map(|paths| {
+            std::env::split_paths(&paths).any(|dir| dir.join(binary).is_file())
+        })
+        .unwrap_or(false)
+}
+
 fn scan_images(dir: &Path) -> Vec<ImageFile> {
     let exts = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "tiff"];
     let mut images = Vec::new();
@@ -768,14 +776,27 @@ fn main() -> std::io::Result<()> {
                             execute!(terminal.backend_mut(), LeaveAlternateScreen).ok();
                             terminal.show_cursor().ok();
 
-                            // Try kitten icat first, then kitty +kitten icat, then xdg-open
-                            let icat = ["kitten icat", "kitty +kitten icat"];
+                            // Try kitten icat first, then kitty +kitten icat,
+                            // then ANSI-art backends chafa / viu / jp2a, then fallback text.
+                            let backends: &[(&str, Vec<&str>)] = &[
+                                ("kitten", vec!["icat"]),
+                                ("kitty", vec!["+kitten", "icat"]),
+                                ("chafa", vec!["-f", "symbols"]),
+                                ("viu", vec![]),
+                                ("jp2a", vec!["--width=80"]),
+                            ];
                             let mut shown = false;
-                            for cmd in &icat {
-                                let parts: Vec<&str> = cmd.split_whitespace().collect();
-                                if std::process::Command::new(parts[0])
-                                    .args(&parts[1..])
-                                    .arg(file.path.to_str().unwrap_or(""))
+                            for (bin, args) in backends {
+                                if !binary_on_path(bin) {
+                                    continue;
+                                }
+                                let mut cmd = std::process::Command::new(bin);
+                                cmd.args(args.iter().copied())
+                                    .arg(file.path.to_str().unwrap_or(""));
+                                if *bin == "viu" || *bin == "jp2a" {
+                                    cmd.stdin(std::process::Stdio::null());
+                                }
+                                if cmd
                                     .stdout(std::process::Stdio::null())
                                     .stderr(std::process::Stdio::null())
                                     .status()

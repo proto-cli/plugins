@@ -1,0 +1,10 @@
+[plugin]
+name = "diff"
+scope = "proto"
+version = "0.1.0"
+description = "Side-by-side colored diff — files and directories"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/diff"
+
+[plugin.commands]
+diff = "bin/diff"

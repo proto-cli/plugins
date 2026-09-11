@@ -1,0 +1,15 @@
+[package]
+name = "cdm"
+version = "0.1.0"
+edition = "2021"
+description = "mkdir + cd — create directories and jump into them"
+license = "MIT"
+
+[[bin]]
+name = "cdm"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+dialoguer = "0.11"
+dirs = "5"

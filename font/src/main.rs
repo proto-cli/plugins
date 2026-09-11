@@ -102,15 +102,17 @@ fn preview_font(font: &FontInfo) {
 }
 
 fn install_font(font: &FontInfo) {
-    let target_dirs = vec![
-        dirs::home_dir().map(|h| h.join(".local/share/fonts")),
-    ];
+    let target_dir = dirs::home_dir()
+        .map(|h| h.join(".local/share/fonts"))
+        .ok_or_else(|| "Could not determine home directory".to_string());
 
-    for target in target_dirs.into_iter().flatten() {
-        if target.exists() {
-            let dest = target.join(
-                font.path.file_name().unwrap_or_default(),
-            );
+    match target_dir {
+        Ok(target) => {
+            if let Err(e) = std::fs::create_dir_all(&target) {
+                eprintln!("  {} {} {}", error(""), target.display(), e);
+                return;
+            }
+            let dest = target.join(font.path.file_name().unwrap_or_default());
             match std::fs::copy(&font.path, &dest) {
                 Ok(_) => {
                     println!("  {}", success(&format!("Installed to {}", dest.display())));
@@ -121,16 +123,14 @@ fn install_font(font: &FontInfo) {
                         .stderr(std::process::Stdio::null())
                         .status();
                     println!("  {}", muted("fc-cache updated"));
-                    return;
                 }
                 Err(e) => {
                     eprintln!("  {} {}", error(""), e);
-                    return;
                 }
             }
         }
+        Err(e) => eprintln!("  {} {}", error(""), e),
     }
-    eprintln!("  {} No writable font directory found", error(""));
 }
 
 fn print_help() {

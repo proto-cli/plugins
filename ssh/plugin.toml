@@ -1,0 +1,10 @@
+[plugin]
+name = "ssh"
+scope = "proto"
+version = "0.1.0"
+description = "SSH host manager — hosts, connect, add, info"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/ssh"
+
+[plugin.commands]
+ssh = "bin/ssh"

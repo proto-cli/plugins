@@ -1,0 +1,15 @@
+[package]
+name = "ssh"
+version = "0.1.0"
+edition = "2021"
+description = "SSH host manager — hosts, connect, add, info"
+license = "MIT"
+
+[[bin]]
+name = "ssh"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+dialoguer = "0.11"
+dirs = "5"

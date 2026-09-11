@@ -12,12 +12,13 @@ pub fn plugins_dir() -> PathBuf {
 }
 
 pub fn which(binary: &str) -> bool {
-    Command::new("which")
-        .arg(binary)
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .status()
-        .map(|s| s.success())
+    std::env::var_os("PATH")
+        .map(|paths| {
+            std::env::split_paths(&paths).any(|dir| {
+                let candidate = dir.join(binary);
+                candidate.is_file()
+            })
+        })
         .unwrap_or(false)
 }
 

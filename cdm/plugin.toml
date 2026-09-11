@@ -1,0 +1,10 @@
+[plugin]
+name = "cdm"
+scope = "proto"
+version = "0.1.0"
+description = "mkdir + cd — create directories and jump into them"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/cdm"
+
+[plugin.commands]
+cdm = "bin/cdm"

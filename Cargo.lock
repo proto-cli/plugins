@@ -179,6 +179,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "archive"
+version = "0.1.0"
+dependencies = [
+ "dialoguer",
+ "owo-colors",
+]
+
+[[package]]
 name = "arg_enum_proc_macro"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -447,6 +455,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cdm"
+version = "0.1.0"
+dependencies = [
+ "dialoguer",
+ "dirs",
+ "owo-colors",
+]
+
+[[package]]
 name = "cert"
 version = "0.1.0"
 dependencies = [
@@ -671,6 +688,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cron"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "owo-colors",
+]
+
+[[package]]
 name = "crossbeam-deque"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -810,10 +835,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "658bce805d770f407bc62102fca7c2c64ceef2fbcb2b8bd19d2765ce093980de"
 dependencies = [
  "console",
+ "fuzzy-matcher",
  "shell-words",
  "tempfile",
  "thiserror 1.0.69",
  "zeroize",
+]
+
+[[package]]
+name = "diff"
+version = "0.1.0"
+dependencies = [
+ "dialoguer",
+ "owo-colors",
 ]
 
 [[package]]
@@ -1032,6 +1066,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "find"
+version = "0.1.0"
+dependencies = [
+ "dialoguer",
+ "owo-colors",
+]
+
+[[package]]
 name = "find-msvc-tools"
 version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1110,6 +1152,15 @@ dependencies = [
  "futures-task",
  "pin-project-lite",
  "slab",
+]
+
+[[package]]
+name = "fuzzy-matcher"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "54614a3312934d066701a80f20f15fa3b56d67ac7722b39eea5b4c9dd1d66c94"
+dependencies = [
+ "thread_local",
 ]
 
 [[package]]
@@ -3094,6 +3145,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ssh"
+version = "0.1.0"
+dependencies = [
+ "dialoguer",
+ "dirs",
+ "owo-colors",
+]
+
+[[package]]
 name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3259,6 +3319,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.3",
+]
+
+[[package]]
+name = "thread_local"
+version = "1.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ad99c4c6d32803332c548b1af0540b357b3f5fc0be8f6c6bfe8b2e6ae784070"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]

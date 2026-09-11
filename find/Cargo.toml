@@ -1,0 +1,14 @@
+[package]
+name = "find"
+version = "0.1.0"
+edition = "2021"
+description = "Interactive file finder — fuzzy search with preview"
+license = "MIT"
+
+[[bin]]
+name = "find"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+dialoguer = { version = "0.11", features = ["fuzzy-select"] }

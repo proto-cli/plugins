@@ -1,0 +1,10 @@
+[plugin]
+name = "cron"
+scope = "proto"
+version = "0.1.0"
+description = "Human-readable crontab — next runs, validation, editor"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/cron"
+
+[plugin.commands]
+cron = "bin/cron"

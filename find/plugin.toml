@@ -1,0 +1,10 @@
+[plugin]
+name = "find"
+scope = "proto"
+version = "0.1.0"
+description = "Interactive file finder — fuzzy search with preview"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/find"
+
+[plugin.commands]
+find = "bin/find"

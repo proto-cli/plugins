@@ -1,0 +1,14 @@
+[package]
+name = "diff"
+version = "0.1.0"
+edition = "2021"
+description = "Side-by-side colored diff — files and directories"
+license = "MIT"
+
+[[bin]]
+name = "diff"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+dialoguer = "0.11"
