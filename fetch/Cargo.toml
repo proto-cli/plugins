@@ -1,0 +1,14 @@
+[package]
+name = "fetch"
+version = "0.1.0"
+edition = "2021"
+description = "neofetch-style system information — ASCII logo, hardware, disks"
+license = "MIT"
+
+[[bin]]
+name = "fetch"
+path = "src/main.rs"
+
+[dependencies]
+owo-colors = "4"
+sysinfo = "0.31"

@@ -1044,6 +1044,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "fetch"
+version = "0.1.0"
+dependencies = [
+ "owo-colors",
+ "sysinfo",
+]
+
+[[package]]
 name = "file-history"
 version = "0.1.0"
 dependencies = [

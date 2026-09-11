@@ -1,0 +1,10 @@
+[plugin]
+name = "fetch"
+scope = "proto"
+version = "0.1.0"
+description = "neofetch-style system information — ASCII logo, hardware, disks"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/fetch"
+
+[plugin.commands]
+fetch = "bin/fetch"
