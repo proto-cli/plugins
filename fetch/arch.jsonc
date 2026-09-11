@@ -1,0 +1,54 @@
+{
+  // proto fetch — default config (fastfetch-style JSONC)
+  // Installed to ~/.config/proto/fetch/arch.jsonc on first run.
+  // Override with:  proto fetch --config /path/to/my.jsonc
+
+  // "logo" corresponds to neofetch's ascii_distro setting.
+  "logo": {
+    // "auto" follows /etc/os-release; set to a distro id ("arch", "fedora", ...),
+    // a custom ASCII file path, or "none"/"" to disable the logo.
+    "source": "auto",
+    // Accent color for the logo. Any ANSI name (cyan, blue, magenta, ...).
+    // Overridden on the CLI by `--color`.
+    "color": "cyan",
+    "padding": { "left": 2, "top": 0 }
+  },
+
+  // "display" mirrors neofetch's separator / ${c..} color settings.
+  "display": {
+    // Neofetch separator between label and value.
+    "separator": ":",
+    "color": {
+      // Label color; omit for default styling.
+      "label": "blue"
+    }
+  },
+
+  // "modules.list" mirrors neofetch's `info` array.
+  // Supported types: title, os, host, kernel, uptime, shell, de, wm,
+  // terminal, cpu, gpu, memory, disk, packages, colors, gap.
+  // Optional "format" strings use {placeholders} (e.g. {user-name}, {pretty-name}).
+  "modules": {
+    "type": "list",
+    "list": [
+      // Neofetch always prints the title first: user@host next to the logo.
+      { "type": "title", "format": "{user-name}{at}{host-name}" },
+      { "type": "os" },
+      { "type": "host" },
+      { "type": "kernel" },
+      { "type": "uptime" },
+      { "type": "shell" },
+      { "type": "de" },
+      { "type": "wm" },
+      { "type": "terminal" },
+      { "type": "cpu" },
+      { "type": "gpu" },
+      { "type": "memory" },
+      // Change the mount point with: { "type": "disk", "mount": "/home" }
+      { "type": "disk" },
+      { "type": "packages" },
+      // Neofetch's 8-color block; lives on its own line.
+      { "type": "colors" }
+    ]
+  }
+}

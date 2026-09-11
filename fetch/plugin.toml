@@ -1,8 +1,8 @@
 [plugin]
 name = "fetch"
 scope = "proto"
-version = "0.1.0"
-description = "neofetch-style system information — ASCII logo, hardware, disks"
+version = "0.2.0"
+description = "neofetch-style system information — ASCII logo, hardware, disks, JSONC config"
 author = "proto-cli"
 repository = "https://github.com/proto-cli/plugins/tree/main/fetch"
 

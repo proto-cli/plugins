@@ -1,102 +1,87 @@
-use owo_colors::{AnsiColors, DynColors, OwoColorize, Style};
+use owo_colors::{AnsiColors, OwoColorize, Style};
+use serde::Deserialize;
+use std::collections::BTreeMap;
+use std::fs;
+use std::path::PathBuf;
 use std::process::Command;
+
+const DEFAULT_CONFIG: &str = include_str!("../arch.jsonc");
 
 fn run_output(program: &str, args: &[&str]) -> String {
     Command::new(program)
         .args(args)
         .output()
-        .ok()
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
         .unwrap_or_default()
 }
 
-fn file_first_line(path: &str, strip: &str) -> Option<String> {
-    let content = std::fs::read_to_string(path).ok()?;
-    for line in content.lines() {
-        if let Some(rest) = line.strip_prefix(strip) {
-            return Some(rest.trim().trim_matches('"').to_string());
-        }
-    }
-    None
+fn hostname() -> String {
+    run_output(
+        "hostname",
+        &[],
+    ).trim()
+        .trim_end_matches('\n')
+        .to_string()
 }
 
 fn distro() -> String {
-    if cfg!(target_os = "macos") {
-        let v = run_output("sw_vers", &["-productVersion"]);
-        return if v.is_empty() { "macOS".into() } else { format!("macOS {}", v) };
+    let os = fs::read_to_string("/etc/os-release").unwrap_or_default();
+    let mut pretty = String::new();
+    for line in os.lines() {
+        if let Some(v) = line.strip_prefix("PRETTY_NAME=") {
+            pretty = v.trim_matches('"').to_string();
+        }
     }
-    if cfg!(target_os = "windows") {
-        return std::env::var("OS").unwrap_or_else(|_| "Windows".into());
-    }
-    file_first_line("/etc/os-release", "PRETTY_NAME=")
-        .or_else(|| file_first_line("/etc/os-release", "NAME="))
-        .or_else(|| file_first_line("/etc/lsb-release", "DISTRIB_DESCRIPTION="))
-        .unwrap_or_else(|| "Linux".to_string())
+    pretty
 }
 
 fn distro_id() -> String {
-    file_first_line("/etc/os-release", "ID=").unwrap_or_default()
+    let os = fs::read_to_string("/etc/os-release").unwrap_or_default();
+    let mut id = String::new();
+    for line in os.lines() {
+        if let Some(v) = line.strip_prefix("ID=") {
+            id = v.trim().to_string();
+        }
+    }
+    id
 }
 
 fn kernel() -> String {
     run_output("uname", &["-r"])
 }
 
-fn hostname() -> String {
-    let h = run_output("hostname", &[]);
-    if h.is_empty() {
-        std::env::var("HOSTNAME").unwrap_or_else(|_| "unknown".into())
-    } else {
-        h
-    }
-}
-
 fn uptime() -> String {
-    if let Ok(content) = std::fs::read_to_string("/proc/uptime") {
-        if let Some(secs) = content
-            .split_whitespace()
-            .next()
-            .and_then(|s| s.parse::<f64>().ok().map(|s| s as u64))
-        {
-            let mut parts = Vec::new();
-            if secs / 86400 > 0 { parts.push(format!("{}d", secs / 86400)); }
-            let h = (secs % 86400) / 3600;
-            if h > 0 { parts.push(format!("{}h", h)); }
-            let m = (secs % 3600) / 60;
-            if m > 0 { parts.push(format!("{}m", m)); }
-            let s = secs % 60;
-            if s > 0 && parts.is_empty() { parts.push(format!("{}s", s)); }
-            if parts.is_empty() { parts.push("just now".into()); }
-            return parts.join(" ");
-        }
-    }
-    "unknown".to_string()
+    run_output("uptime", &["-p"])
+        .trim_start_matches("up ")
+        .to_string()
 }
 
 fn shell() -> String {
     std::env::var("SHELL")
-        .unwrap_or_default()
-        .split('/')
-        .next_back()
-        .filter(|s| !s.is_empty())
-        .unwrap_or("unknown")
-        .to_string()
+        .ok()
+        .and_then(|s| {
+            s.rsplit('/')
+                .next()
+                .map(|n| n.to_string())
+        })
+        .unwrap_or_else(|| "unknown".into())
 }
 
-fn de_wm() -> String {
-    for var in ["XDG_CURRENT_DESKTOP", "DESKTOP_SESSION", "XDG_SESSION_DESKTOP"] {
-        if let Ok(val) = std::env::var(var) {
-            if !val.is_empty() { return val.to_lowercase(); }
-        }
-    }
-    for var in ["DISPLAY", "WAYLAND_DISPLAY"] {
-        if std::env::var(var).is_ok() { return "X / Wayland".to_string(); }
-    }
-    "tty".to_string()
+fn de() -> String {
+    let cur = std::env::var("XDG_CURRENT_DESKTOP")
+        .or_else(|_| std::env::var("DESKTOP_SESSION"))
+        .unwrap_or_default();
+    cur.to_lowercase()
+}
+
+fn wm() -> String {
+    std::env::var("XDG_SESSION_TYPE")
+        .unwrap_or_default()
+        .to_lowercase()
 }
 
 fn terminal() -> String {
-    std::env::var("TERM").unwrap_or_else(|_| "unknown".to_string())
+    std::env::var("TERM").unwrap_or_else(|_| "unknown".into())
 }
 
 fn gpu() -> String {
@@ -114,35 +99,57 @@ fn gpu() -> String {
             break;
         }
     }
-    if gpu.is_empty() { "unknown".to_string() } else { gpu }
+    if gpu.is_empty() {
+        "unknown".to_string()
+    } else {
+        gpu
+    }
 }
 
 fn package_counts() -> String {
-    let mut counts = Vec::new();
-    let checks: [(&str, &[&str]); 6] = [
-        ("pacman", &["-Q"]),
-        ("dpkg-query", &["-f", "${Package}\n", "-W"]),
-        ("rpm", &["-qa"]),
-        ("apk", &["info"]),
-        ("brew", &["list", "--formula"]),
-        ("xbps-query", &["-l"]),
-    ];
-    for (bin, args) in checks {
-        if let Ok(out) = Command::new(bin).args(args).output() {
-            let n = String::from_utf8_lossy(&out.stdout)
+    let mut parts: Vec<String> = Vec::new();
+    for (cmd, label) in [
+        ("pacman", "pacman"),
+        ("dpkg", "dpkg"),
+        ("rpm", "rpm"),
+        ("apk", "apk"),
+        ("brew", "brew"),
+        ("xbps-query", "xbps"),
+    ] {
+        let n: usize = match cmd {
+            "pacman" => run_output("pacman", &["-Qq"])
                 .lines()
-                .filter(|l| !l.trim().is_empty())
-                .count();
-            if n > 0 {
-                counts.push(format!("{} ({})", n, bin.split('-').next().unwrap_or(bin)));
-            }
+                .count(),
+            "dpkg" => run_output("dpkg", &["--list"])
+                .lines()
+                .filter(|l| l.starts_with("ii"))
+                .count(),
+            "rpm" => run_output("rpm", &["-qa"]).lines().count(),
+            "apk" => run_output("apk", &["info"]).lines().count(),
+            "brew" => run_output("brew", &["list", "--formula"]).lines().count(),
+            "xbps-query" => run_output("xbps-query", &["-l"]).lines().count(),
+            _ => 0,
+        };
+        if n > 0 {
+            parts.push(format!("{} ({})", n, label));
         }
     }
-    if counts.is_empty() {
-        "? (no pm detected)".to_string()
+    if parts.is_empty() {
+        "unknown".to_string()
     } else {
-        counts.join(", ")
+        parts.join(", ")
     }
+}
+
+fn format_bytes(bytes: u64) -> String {
+    const UNITS: &[&str] = &["B", "KB", "MB", "GB", "TB"];
+    let mut size = bytes as f64;
+    let mut i = 0;
+    while size >= 1024.0 && i < UNITS.len() - 1 {
+        size /= 1024.0;
+        i += 1;
+    }
+    format!("{:.1} {}", size, UNITS[i])
 }
 
 fn logo_for(distro_id: &str) -> Vec<&'static str> {
@@ -200,38 +207,6 @@ fn logo_for(distro_id: &str) -> Vec<&'static str> {
     }
 }
 
-fn color_block() {
-    let cols = [
-        AnsiColors::Black,
-        AnsiColors::Red,
-        AnsiColors::Green,
-        AnsiColors::Yellow,
-        AnsiColors::Blue,
-        AnsiColors::Magenta,
-        AnsiColors::Cyan,
-        AnsiColors::White,
-    ];
-    let normal: Vec<String> = cols
-        .iter()
-        .map(|c| "████".color(DynColors::Ansi(*c)).to_string())
-        .collect();
-    let bright: Vec<String> = cols
-        .iter()
-        .map(|c| {
-            format!(
-                "{}",
-                "████"
-                    .color(DynColors::Ansi(bright(*c)))
-                    .bold()
-            )
-        })
-        .collect();
-    println!();
-    println!("  {}", normal.join(" "));
-    println!("  {}", bright.join(" "));
-    println!();
-}
-
 fn bright(c: AnsiColors) -> AnsiColors {
     use AnsiColors::*;
     match c {
@@ -247,120 +222,542 @@ fn bright(c: AnsiColors) -> AnsiColors {
     }
 }
 
-fn info_lines() -> Vec<String> {
-    let mut lines: Vec<(String, String)> = Vec::new();
-    let user = std::env::var("USER").unwrap_or_else(|_| "user".into());
-    lines.push(("Host".into(), format!("{}@{}", user, hostname())));
-    lines.push(("OS".into(), distro()));
-    lines.push(("Kernel".into(), kernel()));
-    lines.push(("Uptime".into(), uptime()));
-    lines.push(("Shell".into(), shell()));
-    lines.push(("DE/WM".into(), de_wm()));
-    lines.push(("Terminal".into(), terminal()));
+// ---------------------------------------------------------------- config --
 
-    let mut sys = sysinfo::System::new_all();
-    sys.refresh_all();
-    if let Some(cpu) = sys.cpus().first() {
-        lines.push(("CPU".into(), format!("{} ({})", cpu.brand().trim(), sys.cpus().len())));
-    }
-    lines.push((
-        "Memory".into(),
-        format!(
-            "{} / {}",
-            format_bytes(sys.used_memory()),
-            format_bytes(sys.total_memory())
-        ),
-    ));
-    if let Some(disk) = sysinfo::Disks::new_with_refreshed_list()
-        .iter()
-        .find(|d| d.mount_point().to_str() == Some("/"))
-    {
-        let used = disk.total_space() - disk.available_space();
-        lines.push((
-            "Disk (/)".into(),
-            format!("{} / {}", format_bytes(used), format_bytes(disk.total_space())),
-        ));
-    }
-
-    let g = gpu();
-    if g != "unknown" {
-        lines.push(("GPU".into(), g));
-    }
-
-    if !cfg!(target_os = "windows") {
-        lines.push(("Packages".into(), package_counts()));
-    }
-
-    let width = lines.iter().map(|(k, _)| k.len()).max().unwrap_or(6) + 1;
-    lines
-        .into_iter()
-        .map(|(k, v)| format!("{:>width$} {}", k, v))
-        .collect()
+#[derive(Deserialize, Clone)]
+#[serde(default)]
+struct Config {
+    logo: Logo,
+    display: Display,
+    modules: Modules,
 }
 
-fn format_bytes(bytes: u64) -> String {
-    const UNITS: &[&str] = &["B", "KB", "MB", "GB", "TB"];
-    let mut size = bytes as f64;
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            logo: Logo::default(),
+            display: Display::default(),
+            modules: Modules::default(),
+        }
+    }
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(default)]
+struct Logo {
+    source: String,
+    color: Option<LogoColor>,
+    padding: Padding,
+}
+
+impl Default for Logo {
+    fn default() -> Self {
+        Self {
+            source: "auto".into(),
+            color: Some(LogoColor::Accent("cyan".into())),
+            padding: Padding::default(),
+        }
+    }
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(untagged)]
+enum LogoColor {
+    Accent(String),
+    Map(BTreeMap<String, String>),
+}
+
+#[derive(Deserialize, Clone, Default)]
+#[serde(default)]
+struct Padding {
+    left: usize,
+    top: usize,
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(default)]
+struct Display {
+    separator: String,
+    color: DisplayColor,
+}
+
+impl Default for Display {
+    fn default() -> Self {
+        Self {
+            separator: ":".into(),
+            color: DisplayColor::default(),
+        }
+    }
+}
+
+#[derive(Deserialize, Clone, Default)]
+#[serde(default)]
+struct DisplayColor {
+    label: String,
+}
+
+#[derive(Deserialize, Clone)]
+#[serde(default)]
+struct Modules {
+    list: Vec<Module>,
+}
+
+impl Default for Modules {
+    fn default() -> Self {
+        Self {
+            list: vec![
+                Module {
+                    mtype: Some("title".into()),
+                    format: Some("{user-name}{at}{host-name}".into()),
+                    ..Module::default()
+                },
+                Module { mtype: Some("os".into()), ..Module::default() },
+                Module { mtype: Some("host".into()), ..Module::default() },
+                Module { mtype: Some("kernel".into()), ..Module::default() },
+                Module { mtype: Some("uptime".into()), ..Module::default() },
+                Module { mtype: Some("shell".into()), ..Module::default() },
+                Module { mtype: Some("de".into()), ..Module::default() },
+                Module { mtype: Some("wm".into()), ..Module::default() },
+                Module { mtype: Some("terminal".into()), ..Module::default() },
+                Module { mtype: Some("cpu".into()), ..Module::default() },
+                Module { mtype: Some("gpu".into()), ..Module::default() },
+                Module { mtype: Some("memory".into()), ..Module::default() },
+                Module { mtype: Some("disk".into()), ..Module::default() },
+                Module { mtype: Some("packages".into()), ..Module::default() },
+                Module { mtype: Some("colors".into()), ..Module::default() },
+            ],
+        }
+    }
+}
+
+#[derive(Deserialize, Clone, Default)]
+#[serde(default)]
+struct Module {
+    #[serde(rename = "type")]
+    mtype: Option<String>,
+    format: Option<String>,
+    label: Option<String>,
+    mount: Option<String>,
+}
+
+fn parse_jsonc(text: &str) -> String {
+    let chars: Vec<char> = text.chars().collect();
+    let mut out = String::with_capacity(text.len());
     let mut i = 0;
-    while size >= 1024.0 && i < UNITS.len() - 1 {
-        size /= 1024.0;
-        i += 1;
+    let mut in_str = false;
+    while i < chars.len() {
+        let c = chars[i];
+        if in_str {
+            out.push(c);
+            if c == '\\' && i + 1 < chars.len() {
+                out.push(chars[i + 1]);
+                i += 2;
+                continue;
+            }
+            if c == '"' {
+                in_str = false;
+            }
+            i += 1;
+            continue;
+        }
+        match c {
+            '"' => {
+                in_str = true;
+                out.push(c);
+                i += 1;
+            }
+            '/' if i + 1 < chars.len() && chars[i + 1] == '/' => {
+                while i < chars.len() && chars[i] != '\n' {
+                    i += 1;
+                }
+            }
+            '/' if i + 1 < chars.len() && chars[i + 1] == '*' => {
+                i += 2;
+                while i + 1 < chars.len() && !(chars[i] == '*' && chars[i + 1] == '/') {
+                    i += 1;
+                }
+                i += 2;
+            }
+            ',' if {
+                let mut j = i + 1;
+                while j < chars.len() && chars[j].is_whitespace() {
+                    j += 1;
+                }
+                j < chars.len() && (chars[j] == '}' || chars[j] == ']')
+            } => {
+                i += 1;
+            }
+            _ => {
+                out.push(c);
+                i += 1;
+            }
+        }
     }
-    format!("{:.1} {}", size, UNITS[i])
+    out
 }
 
-fn render(logo_color: Style) {
-    let logo = logo_for(&distro_id());
-    let styled: Vec<String> = logo.iter().map(|l| l.style(logo_color).to_string()).collect();
-    let logo_w = styled.iter().map(|l| l.chars().count()).max().unwrap_or(0) + 2;
-    let info = info_lines();
+fn load_config(path: &PathBuf) -> Result<Config, String> {
+    let text = fs::read_to_string(path).map_err(|e| format!("unable to read {}: {}", path.display(), e))?;
+    let cleaned = parse_jsonc(&text);
+    serde_json::from_str(&cleaned)
+        .map_err(|e| format!("invalid config {}: {}", path.display(), e))
+}
 
-    for (i, l) in styled.iter().enumerate() {
-        let pad: String = " ".repeat(logo_w.saturating_sub(l.chars().count()));
-        let right = info.get(i).map(|s| s.as_str()).unwrap_or("");
-        println!("{}{}{}", l, pad, right);
+fn resolve_config(custom: Option<&str>) -> Result<PathBuf, String> {
+    if let Some(p) = custom {
+        let pb = PathBuf::from(p);
+        if !pb.exists() {
+            return Err(format!("config not found: {}", p));
+        }
+        return Ok(pb);
     }
-    for line in info.iter().skip(styled.len()) {
-        println!("{}{}", " ".repeat(logo_w), line);
+
+    let base = std::env::var("XDG_CONFIG_HOME")
+        .ok()
+        .filter(|s| !s.is_empty())
+        .map(PathBuf::from)
+        .unwrap_or_else(|| {
+            std::env::var("HOME")
+                .map(PathBuf::from)
+                .unwrap_or_else(|_| PathBuf::from("."))
+                .join(".config")
+        });
+    let dir = base.join("proto").join("fetch");
+    let path = dir.join("arch.jsonc");
+
+    if !path.exists() {
+        fs::create_dir_all(&dir)
+            .map_err(|e| format!("unable to create {}: {}", dir.display(), e))?;
+        fs::write(&path, DEFAULT_CONFIG)
+            .map_err(|e| format!("unable to write {}: {}", path.display(), e))?;
+        eprintln!("installed default config to {}", path.display());
+    }
+    Ok(path)
+}
+
+fn style_for(name: &str) -> Option<Style> {
+    match name.to_lowercase().as_str() {
+        "black" => Some(Style::new().black()),
+        "red" => Some(Style::new().red()),
+        "green" => Some(Style::new().green()),
+        "yellow" => Some(Style::new().yellow()),
+        "blue" => Some(Style::new().blue()),
+        "magenta" => Some(Style::new().magenta()),
+        "cyan" => Some(Style::new().cyan()),
+        "white" => Some(Style::new().white()),
+        _ => None,
     }
 }
 
-fn print_help() {
-    println!("proto fetch — neofetch-style system info");
-    println!();
-    println!("  USAGE:");
-    println!("    proto fetch                Show system info (like neofetch)");
-    println!("    proto fetch --color <c>    Logo color: cyan, blue, green, magenta,");
-    println!("                               red, yellow, white (default cyan)");
-    println!("    proto fetch --help         Show this help");
-    println!();
+fn logo_color(cfg: &Config, cli_color: Option<&str>) -> Style {
+    if let Some(c) = cli_color {
+        return style_for(c).unwrap_or_else(|| Style::new().cyan());
+    }
+    match &cfg.logo.color {
+        Some(LogoColor::Accent(a)) => style_for(a).unwrap_or_else(|| Style::new().cyan()),
+        Some(LogoColor::Map(map)) => map
+            .values()
+            .next()
+            .and_then(|v| style_for(v))
+            .unwrap_or_else(|| Style::new().cyan()),
+        None => Style::new().cyan(),
+    }
 }
+
+fn logo_lines(cfg: &Config) -> Vec<&'static str> {
+    let s = cfg.logo.source.to_lowercase();
+    match s.as_str() {
+        "" | "none" | "off" | "false" | "disabled" => vec![],
+        "auto" => logo_for(&distro_id()),
+        other => logo_for(other),
+    }
+}
+
+fn template(fmt: &str, vals: &[(&str, &str)]) -> String {
+    let mut out = fmt.to_string();
+    for (k, v) in vals {
+        out = out.replace(&format!("{{{}}}", k), v);
+    }
+    out
+}
+
+fn module_value(m: &Module, sys: &mut sysinfo::System) -> Option<(String, String)> {
+    let ty = m.mtype.as_deref().unwrap_or("");
+    let user = std::env::var("USER").unwrap_or_else(|_| "user".into());
+    let host = hostname();
+    let shell_path = std::env::var("SHELL").unwrap_or_default();
+
+    let (label, value, placeholders): (&str, String, Vec<(&str, String)>) = match ty {
+        "title" => {
+            let fmt = m.format.as_deref().unwrap_or("{user-name}@{host-name}");
+            let out = template(fmt, &[
+                ("user-name", user.as_str()),
+                ("at", "@"),
+                ("host-name", host.as_str()),
+                ("pretty-name", distro().as_str()),
+            ]);
+            return Some((String::new(), out));
+        }
+        "os" | "distro" => {
+            let v = distro();
+            ("OS", v, vec![("pretty-name", distro()), ("name", distinct_name()), ("version", String::new()), ("id", distro_id())])
+        }
+        "host" => ("Host", host.clone(), vec![("name", host.clone()), ("pretty-name", host.clone())]),
+        "kernel" => {
+            let k = kernel();
+            ("Kernel", k.clone(), vec![("release", k), ("version", String::new()), ("build", String::new())])
+        }
+        "uptime" => {
+            let u = uptime();
+            ("Uptime", u.clone(), vec![("total", u), ("days", String::new()), ("hours", String::new()), ("minutes", String::new())])
+        }
+        "shell" => {
+            let name = shell();
+            ("Shell", name, vec![("shell", shell_path.clone()), ("path", shell_path), ("version", String::new())])
+        }
+        "de" => {
+            let d = de();
+            ("DE", d, vec![("name", de())])
+        }
+        "wm" => {
+            let w = wm();
+            ("WM", w, vec![("name", wm())])
+        }
+        "terminal" => {
+            let t = terminal();
+            ("Terminal", t, vec![("name", terminal())])
+        }
+        "cpu" => {
+            if let Some(cpu) = sys.cpus().first() {
+                let brand = cpu.brand().trim().to_string();
+                let cores = sys.cpus().len().to_string();
+                (
+                    "CPU",
+                    format!("{} ({})", brand, cores),
+                    vec![("brand", brand), ("cores", cores), ("percent", String::new())],
+                )
+            } else {
+                return None;
+            }
+        }
+        "gpu" => {
+            let g = gpu();
+            if g == "unknown" {
+                return None;
+            }
+            ("GPU", g, vec![("name", gpu())])
+        }
+        "memory" => {
+            let used = format_bytes(sys.used_memory());
+            let total = format_bytes(sys.total_memory());
+            let free = format_bytes(sys.total_memory() - sys.used_memory());
+            let pct = if sys.total_memory() > 0 {
+                (sys.used_memory() * 100 / sys.total_memory()).to_string()
+            } else {
+                "0".into()
+            };
+            (
+                "Memory",
+                format!("{} / {}", used, total),
+                vec![("used", used), ("total", total), ("free", free), ("used-percent", pct)],
+            )
+        }
+        "disk" => {
+            let mount = m.mount.as_deref().unwrap_or("/");
+            if let Some(disk) = sysinfo::Disks::new_with_refreshed_list()
+                .iter()
+                .find(|d| d.mount_point().to_str() == Some(mount))
+            {
+                let used = format_bytes(disk.total_space() - disk.available_space());
+                let total = format_bytes(disk.total_space());
+                let free = format_bytes(disk.available_space());
+                let pct = if disk.total_space() > 0 {
+                    ((disk.total_space() - disk.available_space()) * 100 / disk.total_space()).to_string()
+                } else {
+                    "0".into()
+                };
+                (
+                    "Disk",
+                    format!("{} / {}", used, total),
+                    vec![("used", used), ("total", total), ("free", free), ("used-percent", pct)],
+                )
+            } else {
+                return None;
+            }
+        }
+        "packages" => {
+            let p = package_counts();
+            if p == "unknown" {
+                return None;
+            }
+            ("Packages", p, vec![("count", package_counts()), ("manager", package_counts())])
+        }
+        "gap" | "break" => return Some((String::new(), String::new())),
+        _ => return None,
+    };
+
+    let label = m.label.clone().unwrap_or_else(|| label.to_string());
+    if value.is_empty() && ty != "gap" {
+        return None;
+    }
+
+    if let Some(fmt) = &m.format {
+        let mut vals: Vec<(&str, &str)> =
+            placeholders.iter().map(|(k, v)| (*k, v.as_str())).collect();
+        vals.push(("label", label.as_str()));
+        vals.push(("value", value.as_str()));
+        let rendered = template(fmt, &vals);
+        return Some((String::new(), rendered));
+    }
+
+    Some((label, value))
+}
+
+fn distinct_name() -> String {
+    let os = fs::read_to_string("/etc/os-release").unwrap_or_default();
+    for line in os.lines() {
+        if let Some(v) = line.strip_prefix("NAME=") {
+            return v.trim_matches('"').to_string();
+        }
+    }
+    String::new()
+}
+
+// ------------------------------------------------------------- output --
+
+fn color_block() {
+    let cols = [
+        AnsiColors::Black,
+        AnsiColors::Red,
+        AnsiColors::Green,
+        AnsiColors::Yellow,
+        AnsiColors::Blue,
+        AnsiColors::Magenta,
+        AnsiColors::Cyan,
+        AnsiColors::White,
+    ];
+    let row: Vec<String> = cols
+        .iter()
+        .map(|c| "████".color(DynColors::Ansi(*c)).to_string())
+        .collect();
+    let bright_row: Vec<String> = cols
+        .iter()
+        .map(|c| "████".color(DynColors::Ansi(bright(*c))).bold().to_string())
+        .collect();
+    println!("  {}", row.join(" "));
+    println!("  {}", bright_row.join(" "));
+}
+
+use owo_colors::DynColors;
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.iter().any(|a| a == "--help" || a == "-h" || a == "help") {
-        print_help();
+        println!("proto fetch — neofetch-style system information");
+        println!();
+        println!("  USAGE:");
+        println!("    proto fetch                Show system info (neofetch-style)");
+        println!("    proto fetch --color <c>    Logo/accent color (cyan, blue, magenta, ...)");
+        println!("    proto fetch --config <p>   Use a custom JSONC config file");
+        println!("    proto fetch --help         Show this help");
+        println!();
+        println!("  CONFIG:");
+        println!("    On first run a default config is installed to");
+        println!("    ~/.config/proto/fetch/arch.jsonc and used automatically.");
+        println!("    Custom: --config /path/to/my.jsonc");
         return;
     }
 
-    let mut color = "cyan".to_string();
-    if let Some(i) = args.iter().position(|a| a == "--color") {
-        if let Some(v) = args.get(i + 1) {
-            color = v.to_lowercase();
+    let mut cli_color: Option<String> = None;
+    let mut cli_config: Option<String> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--color" => {
+                cli_color = args.get(i + 1).cloned();
+                i += 2;
+            }
+            "--config" => {
+                cli_config = args.get(i + 1).cloned();
+                i += 2;
+            }
+            _ => i += 1,
         }
     }
 
-    let logo_style = match color.as_str() {
-        "blue" => Style::new().blue(),
-        "green" => Style::new().green(),
-        "magenta" => Style::new().magenta(),
-        "red" => Style::new().red(),
-        "yellow" => Style::new().yellow(),
-        "white" => Style::new().white(),
-        _ => Style::new().cyan(),
+    let path = match resolve_config(cli_config.as_deref()) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("proto fetch: {}", e);
+            std::process::exit(1);
+        }
     };
 
+    let cfg = match load_config(&path) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("warning: {} — using built-in defaults", e);
+            Config::default()
+        }
+    };
+
+    let logo_style = logo_color(&cfg, cli_color.as_deref());
+    let label_style = style_for(&cfg.display.color.label);
+    let sep = &cfg.display.separator;
+
+    let mut sys = sysinfo::System::new_all();
+    sys.refresh_all();
+
+    let mut rows: Vec<String> = Vec::new();
+    let mut colors_after = false;
+    for m in &cfg.modules.list {
+        match m.mtype.as_deref() {
+            Some("colors") => colors_after = true,
+            _ => {
+                if let Some((label, value)) = module_value(m, &mut sys) {
+                    if label.is_empty() {
+                        rows.push(value);
+                        continue;
+                    }
+                    let lt = format!("{}{} {}",
+                        label.style(label_style.unwrap_or(Style::new())),
+                        sep,
+                        value);
+                    rows.push(lt);
+                }
+            }
+        }
+    }
+
     println!();
-    render(logo_style);
-    color_block();
+
+    let mut logo = logo_lines(&cfg);
+    if cfg.logo.padding.top > 0 {
+        let blanks: Vec<&'static str> = (0..cfg.logo.padding.top).map(|_| "").collect();
+        logo.splice(0..0, blanks);
+    }
+    let styled: Vec<String> = logo
+        .iter()
+        .map(|l| l.style(logo_style).to_string())
+        .collect();
+    let logo_w = styled.iter().map(|l| l.chars().count()).max().unwrap_or(0)
+        + cfg.logo.padding.left
+        + 2;
+
+    for (i, l) in styled.iter().enumerate() {
+        let pad: String = " ".repeat(logo_w.saturating_sub(l.chars().count()));
+        let right = if i < rows.len() {
+            rows[i].as_str()
+        } else {
+            ""
+        };
+        println!("{}{}{}", l, pad, right);
+    }
+    for line in rows.iter().skip(styled.len()) {
+        println!("{}{}", " ".repeat(logo_w), line);
+    }
+
+    if colors_after {
+        color_block();
+    }
 }
