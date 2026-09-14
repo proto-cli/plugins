@@ -301,7 +301,7 @@ fn enter_snippet(p: &Project, fish: bool) -> String {
     }
 }
 
-fn cmd_enter(reg: &Registry, name: &str) -> i32 {
+fn cmd_enter(reg: &Registry, name: &str, print_only: bool) -> i32 {
     let p = resolve_project(reg, name);
     if !check_venv(&p) {
         err(format!(
@@ -311,10 +311,94 @@ fn cmd_enter(reg: &Registry, name: &str) -> i32 {
             name
         ));
     }
-    let fish = current_shell().contains("fish");
-    print!("{}", enter_snippet(&p, fish).dimmed().to_string());
     set_last(name);
-    0
+    if print_only {
+        let fish = current_shell().contains("fish");
+        print!("{}", enter_snippet(&p, fish));
+        return 0;
+    }
+    spawn_enter(&p)
+}
+
+fn enter_bash_rc(p: &Project) -> PathBuf {
+    let dir = registry_dir();
+    fs::create_dir_all(&dir).ok();
+    let rc = dir.join(format!("rc-{}.sh", p.name));
+    let src = format!(
+        "# proto venv enter: {name} (bash)\n\
+         [ -f \"$HOME/.bashrc\" ] && source \"$HOME/.bashrc\"\n\
+         cd '{root}'\n\
+         source '{venv}/bin/activate'\n\
+         export PROTO_VENV='{name}'\n\
+         export PROTO_VENV_ROOT='{root}'\n\
+         export PROTO_VENV_ENTERED=yes\n",
+        name = p.name,
+        root = p.root,
+        venv = p.venv_path().display()
+    );
+    fs::write(&rc, src).ok();
+    rc
+}
+
+fn enter_zsh_zdot(p: &Project) -> PathBuf {
+    let dir = registry_dir().join("zdot").join(&p.name);
+    fs::create_dir_all(&dir).ok();
+    let zshrc = dir.join(".zshrc");
+    let src = format!(
+        "# proto venv enter: {name} (zsh)\n\
+         [ -f \"$HOME/.zshrc\" ] && source \"$HOME/.zshrc\"\n\
+         cd '{root}'\n\
+         source '{venv}/bin/activate'\n\
+         export PROTO_VENV='{name}'\n\
+         export PROTO_VENV_ROOT='{root}'\n\
+         export PROTO_VENV_ENTERED=yes\n"
+        ,
+        name = p.name,
+        root = p.root,
+        venv = p.venv_path().display()
+    );
+    fs::write(&zshrc, src).ok();
+    dir
+}
+
+fn spawn_enter(p: &Project) -> i32 {
+    let shell = current_shell();
+    let root = p.root.clone();
+    let venv = p.venv_path().display().to_string();
+    let name = p.name.clone();
+    let envs: Vec<(String, String)> = vec![
+        ("PROTO_VENV".into(), name.clone()),
+        ("PROTO_VENV_ROOT".into(), root.clone()),
+        ("PROTO_VENV_ENTERED".into(), "yes".into()),
+    ];
+    let mut c = Command::new(&shell);
+    c.envs(envs).current_dir(&root);
+
+    if shell.contains("fish") {
+        c.arg("-C").arg(format!(
+            "cd '{root}'; source '{venv}/bin/activate.fish'; set -gx PROTO_VENV '{name}'; set -gx PROTO_VENV_ROOT '{root}'; set -gx PROTO_VENV_ENTERED yes",
+            root = root, venv = venv, name = name
+        ));
+    } else if shell.contains("bash") {
+        let rc = enter_bash_rc(p);
+        c.arg("--rcfile").arg(&rc);
+    } else if shell.contains("zsh") {
+        let zdot = enter_zsh_zdot(p);
+        c.env("ZDOTDIR", zdot);
+    } else {
+        // sh/dash/ash — best effort: source activate in a fresh interactive shell
+        let rc = enter_bash_rc(p).display().to_string();
+        if let Some(rest) = shell.rsplit('/').next() {
+            if let Ok(code) = Command::new(rest).arg("-i").arg("-c").arg(format!(
+                "[ -f '{}' ] && . '{}'; exec {}",
+                rc, rc, shell
+            )).status() {
+                return code.code().unwrap_or(1);
+            }
+        }
+        return 1;
+    }
+    spawn_out(&mut c)
 }
 
 // ------------------------------------------------------------ main ----
@@ -331,10 +415,10 @@ fn print_help() {
     println!("  PROJECTS");
     println!("    create <name> [--dir <path>] [--python <ver|path>] [--venv-dir <name>] [--force]");
     println!("      Make a venv named <name> rooted at <dir> (default: current folder).");
-    println!("    enter <name>          Print a shell snippet you eval to enter the venv:");
-    println!("                            eval \"$(proto venv enter {})\"", "proj".bold());
+    println!("    enter <name>          Enter an interactive shell inside the venv at the");
+    println!("                            project root.  --print shows an eval snippet instead.");
     println!("    resume                Enter the last venv you entered.");
-    println!("    shell <name>          Spawn an interactive shell inside the venv.");
+    println!("    shell <name>          Same as enter (alias).");
     println!("    list [--json]         List projects (alias: ls).");
     println!("    info <name>           Show details for one project.");
     println!("    modify <name> [--python <p>] [--dir <d>] [--rename <new>]");
@@ -426,28 +510,29 @@ fn main() {
             );
             println!();
             println!(
-                "{} enter it with:\n    eval \"$(proto venv enter {})\"",
+                "{} enter it with:\n    proto venv enter {}",
                 "→".cyan(),
                 name
             );
         }
 
         "enter" => {
-            let f = parse_flags(&args[1..], &[], &[]);
+            let f = parse_flags(&args[1..], &[], &["--print"]);
             let name = f.pos.first().cloned().unwrap_or_else(|| {
                 err("usage: proto venv enter <name>".into())
             });
             let reg = load_registry();
-            std::process::exit(cmd_enter(&reg, &name));
+            std::process::exit(cmd_enter(&reg, &name, f.values.contains_key("--print")));
         }
 
         "resume" => {
+            let f = parse_flags(&args[1..], &[], &["--print"]);
             let state = load_state();
             let name = state.last.unwrap_or_else(|| {
                 err("no project to resume — enter one first with 'proto venv enter <name>'".into())
             });
             let reg = load_registry();
-            std::process::exit(cmd_enter(&reg, &name));
+            std::process::exit(cmd_enter(&reg, &name, f.values.contains_key("--print")));
         }
 
         "shell" => {
@@ -456,27 +541,7 @@ fn main() {
                 err("usage: proto venv shell <name>".into())
             });
             let reg = load_registry();
-            let p = resolve_project(&reg, &name);
-            if !check_venv(&p) {
-                err(format!("venv '{}' not valid at {}", name, p.venv_path().display()));
-            }
-            let shell = current_shell();
-            let envs: Vec<(String, String)> = vec![
-                ("PROTO_VENV".into(), name.clone()),
-                ("PROTO_VENV_ROOT".into(), p.root.clone()),
-                (
-                    "PATH".into(),
-                    format!(
-                        "{}:{}",
-                        p.bin("").display(),
-                        env::var("PATH").unwrap_or_default()
-                    ),
-                ),
-            ];
-            let mut c = Command::new(&shell);
-            c.envs(envs).current_dir(&p.root);
-            println!("spawning {} inside '{}' at {}", shell, name.bold(), p.root.cyan());
-            std::process::exit(spawn_out(&mut c));
+            std::process::exit(cmd_enter(&reg, &name, false));
         }
 
         "list" | "ls" => {
@@ -552,7 +617,7 @@ fn main() {
             println!("updated : {}", p.updated);
             println!("healthy : {}", if check_venv(&p) { format!("{}", "yes".green()) } else { format!("{}", "no".red()) });
             println!();
-            println!("enter   : eval \"$(proto venv enter {})\"", name);
+            println!("enter   : proto venv enter {}", name);
         }
 
         "modify" | "update" => {
@@ -834,7 +899,7 @@ fn main() {
                     Some(p) => println!("active  : {}  at {}  ({})", n.bold().green(), p.root.cyan(), p.venv_path().display()),
                     None => println!("active  : {} (not in registry)", n),
                 },
-                Err(_) => println!("active  : {}", "none (eval \"$(proto venv enter <name>)\")".dimmed()),
+                Err(_) => println!("active  : {}", "none (run 'proto venv enter <name>')".dimmed()),
             }
             match &state.last {
                 Some(l) => println!("last    : {}", l.bold()),
