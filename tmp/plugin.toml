@@ -1,0 +1,3 @@
+[plugin.commands]
+tmp = "bin/tmp"
+scope = "proto"
