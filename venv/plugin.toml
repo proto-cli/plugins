@@ -1,0 +1,10 @@
+[plugin]
+name = "venv"
+scope = "proto"
+version = "0.1.0"
+description = "Python virtualenv manager — create, enter, resume, list, modify, delete projects"
+author = "proto-cli"
+repository = "https://github.com/proto-cli/plugins/tree/main/venv"
+
+[plugin.commands]
+venv = "bin/venv"

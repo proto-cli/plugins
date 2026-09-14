@@ -55,6 +55,7 @@ members = [
     "storage",
     "todo",
     "tree-view",
+    "venv",
     "webhook",
     "wifi",
 ]
